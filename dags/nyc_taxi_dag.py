@@ -301,6 +301,7 @@ def create_zone_aggregations(**context):
     import pandas as pd
     import psycopg2
     import json
+    import os
     
     # Get Supabase connection URL from environment
     supabase_url = os.getenv('SUPABASE_DATABASE_URL')
