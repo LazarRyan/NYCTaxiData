@@ -1,0 +1,102 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: nyc_taxi_data
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d nyc_taxi_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Apache Airflow (Standalone mode for easier setup)
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/nyc_taxi_data
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      # Spark configuration
+      SPARK_HOME: /opt/spark
+      PYTHONPATH: /opt/spark/python
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./spark_jobs:/opt/airflow/spark_jobs
+    ports:
+      - "8080:8080"
+    command: standalone
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 30
+
+  # Apache Spark (for PySpark jobs)
+  spark-master:
+    image: bitnami/spark:3.5
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+    ports:
+      - "8081:8080"
+      - "7077:7077"
+    volumes:
+      - ./spark_jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 1G
+      SPARK_WORKER_CORES: 1
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
+
+  # Streamlit Dashboard
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      - DATABASE_URL=postgresql://airflow:airflow@postgres:5432/nyc_taxi_data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./streamlit_app:/app/streamlit_app
+      - ./data:/app/data
+
+volumes:
+  postgres_data: 
