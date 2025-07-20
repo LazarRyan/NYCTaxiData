@@ -36,7 +36,6 @@ def download_nyc_taxi_data(**context):
     Download NYC taxi data for a specific month
     """
     import requests
-    import os
     from datetime import datetime
     
     # Get the execution date from context
