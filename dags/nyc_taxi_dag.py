@@ -152,7 +152,6 @@ def run_spark_processing(**context):
     
     try:
         # Set Spark home environment variable
-        import os
         os.environ['SPARK_HOME'] = '/opt/spark'
         os.environ['PATH'] = f"/opt/spark/bin:{os.environ.get('PATH', '')}"
         
