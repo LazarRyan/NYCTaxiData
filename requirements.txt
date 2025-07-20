@@ -1,7 +1,7 @@
 # Core Data Processing
-pandas>=2.2.0
+pandas>=2.2.0,<3.0.0
 pyarrow==14.0.2
-numpy>=1.26.0
+numpy>=1.26.0,<2.0.0
 
 # Airflow & Database
 apache-airflow==2.8.1

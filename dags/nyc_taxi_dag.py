@@ -91,15 +91,33 @@ def run_spark_processing(**context):
     import subprocess
     import time
     
+    # Get Supabase connection URL from environment
+    supabase_url = os.getenv('SUPABASE_DATABASE_URL')
+    
+    if not supabase_url:
+        logging.error("SUPABASE_DATABASE_URL environment variable not set")
+        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
+    
+    # Parse Supabase URL to get connection details
+    from urllib.parse import urlparse
+    parsed_url = urlparse(supabase_url)
+    
+    db_host = parsed_url.hostname
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.path.lstrip('/')
+    db_user = parsed_url.username
+    db_password = parsed_url.password
+    
     # First, drop and recreate the table with correct schema
     logging.info("Recreating table with correct schema...")
     try:
         import psycopg2
         conn = psycopg2.connect(
-            host="postgres",
-            database="nyc_taxi_data",
-            user="airflow",
-            password="airflow"
+            host=db_host,
+            port=db_port,
+            database=db_name,
+            user=db_user,
+            password=db_password
         )
         cursor = conn.cursor()
         cursor.execute("DROP TABLE IF EXISTS taxi_trips CASCADE;")
@@ -187,21 +205,24 @@ def run_spark_processing(**context):
         
         logging.info(f"Processed {processed_df.count()} valid trips")
         
-        # Save to PostgreSQL using Spark JDBC
-        logging.info("Saving to PostgreSQL using Spark JDBC...")
+        # Save to Supabase using Spark JDBC
+        logging.info("Saving to Supabase using Spark JDBC...")
+        
+        # Build JDBC URL for Supabase
+        jdbc_url = f"jdbc:postgresql://{db_host}:{db_port}/{db_name}"
         
         processed_df.write \
             .format("jdbc") \
-            .option("url", "jdbc:postgresql://postgres:5432/nyc_taxi_data") \
+            .option("url", jdbc_url) \
             .option("dbtable", "taxi_trips") \
-            .option("user", "airflow") \
-            .option("password", "airflow") \
+            .option("user", db_user) \
+            .option("password", db_password) \
             .option("driver", "org.postgresql.Driver") \
             .option("batchsize", 1000) \
             .mode("append") \
             .save()
         
-        logging.info("Data successfully saved to PostgreSQL using Spark!")
+        logging.info("Data successfully saved to Supabase using Spark!")
         
         # Show summary statistics using Spark
         total_trips = processed_df.count()
@@ -282,6 +303,23 @@ def create_zone_aggregations(**context):
     import psycopg2
     import json
     
+    # Get Supabase connection URL from environment
+    supabase_url = os.getenv('SUPABASE_DATABASE_URL')
+    
+    if not supabase_url:
+        logging.error("SUPABASE_DATABASE_URL environment variable not set")
+        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
+    
+    # Parse Supabase URL to get connection details
+    from urllib.parse import urlparse
+    parsed_url = urlparse(supabase_url)
+    
+    db_host = parsed_url.hostname
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.path.lstrip('/')
+    db_user = parsed_url.username
+    db_password = parsed_url.password
+    
     try:
         # Read zone lookup data
         zone_lookup_file = "/opt/airflow/data/zones/taxi_zone_lookup.csv"
@@ -300,12 +338,13 @@ def create_zone_aggregations(**context):
             logging.info("No GeoJSON file available - using simplified zone mapping")
             geojson_data = None
         
-        # Connect to database and get trip data
+        # Connect to Supabase database
         conn = psycopg2.connect(
-            host="postgres",
-            database="nyc_taxi_data",
-            user="airflow",
-            password="airflow"
+            host=db_host,
+            port=db_port,
+            database=db_name,
+            user=db_user,
+            password=db_password
         )
         
         # Get pickup zone aggregations

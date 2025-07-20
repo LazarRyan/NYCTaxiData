@@ -191,9 +191,15 @@ st.markdown("""
 
 @st.cache_data(ttl=600)  # Cache for 10 minutes - longer cache for larger dataset
 def load_data_from_db():
-    """Load data from PostgreSQL database with enhanced queries"""
+    """Load data from Supabase PostgreSQL database with enhanced queries"""
     try:
-        database_url = os.getenv('DATABASE_URL', 'postgresql://airflow:airflow@postgres:5432/nyc_taxi_data')
+        # Get Supabase connection from environment variable
+        database_url = os.getenv('SUPABASE_DATABASE_URL')
+        
+        if not database_url:
+            st.warning("⚠️ SUPABASE_DATABASE_URL not found. Running in demo mode with sample data.")
+            return generate_demo_data()
+        
         engine = sqlalchemy.create_engine(
             database_url,
             pool_size=10,
@@ -201,6 +207,10 @@ def load_data_from_db():
             pool_pre_ping=True,
             pool_recycle=300
         )
+        
+        # Test connection first
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
         
         # Optimized query - no ORDER BY for faster loading
         query = """
@@ -270,8 +280,61 @@ def load_data_from_db():
         return df
         
     except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
-        return pd.DataFrame()
+        st.warning(f"⚠️ Database connection failed: {str(e)}. Running in demo mode with sample data.")
+        return generate_demo_data()
+
+def generate_demo_data():
+    """Generate sample NYC taxi data for demo purposes"""
+    np.random.seed(42)  # For reproducible results
+    
+    # Generate 10,000 sample records
+    n_records = 10000
+    
+    # Date range: Last 30 days
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+    
+    # Generate random pickup times
+    pickup_times = pd.date_range(start=start_date, end=end_date, periods=n_records)
+    
+    # Generate sample data
+    data = {
+        'pickup_datetime': pickup_times,
+        'dropoff_datetime': pickup_times + pd.Timedelta(minutes=np.random.uniform(5, 60, n_records)),
+        'pickup_location_id': np.random.randint(1, 264, n_records),  # NYC has 263 taxi zones
+        'dropoff_location_id': np.random.randint(1, 264, n_records),
+        'trip_distance': np.random.uniform(0.5, 25, n_records),
+        'fare_amount': np.random.uniform(2.5, 50, n_records),
+        'tip_amount': np.random.uniform(0, 10, n_records),
+        'total_amount': np.random.uniform(3, 60, n_records),
+        'payment_type': np.random.choice([1, 2, 3, 4], n_records, p=[0.7, 0.2, 0.08, 0.02]),
+        'trip_duration_minutes': np.random.uniform(5, 60, n_records),
+        'tip_percentage': np.random.uniform(0, 25, n_records)
+    }
+    
+    df = pd.DataFrame(data)
+    
+    # Add derived columns
+    df['pickup_hour'] = df['pickup_datetime'].dt.hour
+    df['pickup_day_of_week'] = df['pickup_datetime'].dt.dayofweek
+    df['pickup_month'] = df['pickup_datetime'].dt.month
+    df['pickup_date'] = df['pickup_datetime'].dt.date
+    df['pickup_week'] = df['pickup_datetime'].dt.isocalendar().week
+    df['pickup_month_name'] = df['pickup_datetime'].dt.strftime('%B')
+    
+    # Add time period classification
+    df['time_period'] = df['pickup_hour'].apply(lambda x: 
+        'Morning Rush' if 6 <= x <= 9 else
+        'Evening Rush' if 17 <= x <= 20 else
+        'Late Night' if x >= 22 or x <= 6 else
+        'Regular Hours'
+    )
+    
+    # Add revenue metrics
+    df['revenue_per_minute'] = df['total_amount'] / df['trip_duration_minutes']
+    df['revenue_per_mile'] = df['total_amount'] / df['trip_distance']
+    
+    return df
 
 
 
@@ -287,12 +350,13 @@ def create_nyc_choropleth(df):
     
     # Get zone aggregations from database
     try:
-        conn = psycopg2.connect(
-            host="postgres",
-            database="nyc_taxi_data",
-            user="airflow",
-            password="airflow"
-        )
+        database_url = os.getenv('SUPABASE_DATABASE_URL')
+        
+        if not database_url:
+            st.warning("⚠️ Zone aggregation data not available in demo mode.")
+            return
+        
+        engine = sqlalchemy.create_engine(database_url)
         
         # Get zone data with pickup and dropoff metrics
         zone_query = """
@@ -317,15 +381,14 @@ def create_nyc_choropleth(df):
         ORDER BY total_revenue DESC
         """
         
-        zone_df = pd.read_sql(zone_query, conn)
-        conn.close()
+        zone_df = pd.read_sql(zone_query, engine)
         
         if zone_df.empty:
             st.warning("No zone aggregation data available. Please run the Airflow pipeline to generate zone data.")
             return
             
     except Exception as e:
-        st.error(f"Error loading zone data: {str(e)}")
+        st.warning(f"⚠️ Zone data not available: {str(e)}. Skipping zone analysis.")
         return
     
     # Add map type selector
