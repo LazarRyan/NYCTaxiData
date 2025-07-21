@@ -8,6 +8,7 @@ import PaymentTypeChart from '@/components/analytics/PaymentTypeChart';
 import Histograms from '@/components/analytics/Histograms';
 import TopZones from '@/components/analytics/TopZones';
 import { TaxiTrip } from '@/lib/database';
+import { saveAs } from 'file-saver';
 
 interface ApiResponse {
   data: TaxiTrip[];
@@ -90,6 +91,29 @@ export default function Home() {
     fetchData(newPage);
   };
 
+  // Download CSV handler
+  const handleDownloadCSV = async () => {
+    try {
+      const params = new URLSearchParams({
+        startDate,
+        endDate,
+        page: '1',
+        pageSize: '10000000', // large number to get all rows
+      });
+      const response = await fetch(`/api/taxi-data?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const result = await response.json();
+      const rows = result.data;
+      if (!rows || rows.length === 0) throw new Error('No data to download');
+      const header = Object.keys(rows[0]);
+      const csv = [header.join(','), ...rows.map(row => header.map(h => JSON.stringify(row[h] ?? '')).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, 'nyc_taxi_data.csv');
+    } catch (err) {
+      alert('Download failed: ' + (err instanceof Error ? err.message : err));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -123,12 +147,18 @@ export default function Home() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end space-x-2">
               <button
                 onClick={handleDateChange}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
               >
                 Update Data
+              </button>
+              <button
+                onClick={handleDownloadCSV}
+                className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                Download CSV
               </button>
             </div>
           </div>
@@ -152,88 +182,7 @@ export default function Home() {
         </div>
 
         {/* Data Table (optional, paginated) */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Raw Data (Paginated)</h2>
-          {loading && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading data...</p>
-            </div>
-          )}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-8">
-              <p className="text-red-800">Error: {error}</p>
-            </div>
-          )}
-          {!loading && !error && data.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Pickup</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Dropoff</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Distance</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Fare</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Tip</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Total</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Payment</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Duration (min)</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {data.map((trip, i) => (
-                    <tr key={i}>
-                      <td className="px-2 py-1 text-xs">{trip.pickup_location_id}</td>
-                      <td className="px-2 py-1 text-xs">{trip.dropoff_location_id}</td>
-                      <td className="px-2 py-1 text-xs">{trip.trip_distance}</td>
-                      <td className="px-2 py-1 text-xs">{trip.fare_amount}</td>
-                      <td className="px-2 py-1 text-xs">{trip.tip_amount}</td>
-                      <td className="px-2 py-1 text-xs">{trip.total_amount}</td>
-                      <td className="px-2 py-1 text-xs">{trip.payment_type}</td>
-                      <td className="px-2 py-1 text-xs">{trip.trip_duration_minutes}</td>
-                      <td className="px-2 py-1 text-xs">{trip.pickup_datetime.slice(0, 10)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {!loading && !error && data.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No data found for the selected date range.</p>
-            </div>
-          )}
-          {/* Pagination controls (if needed) */}
-          {pagination && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-700">
-                Showing {((pagination.page - 1) * pagination.pageSize) + 1} to{' '}
-                {Math.min(pagination.page * pagination.pageSize, pagination.totalRecords)} of{' '}
-                {pagination.totalRecords} records
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={!pagination.hasPrevPage}
-                  className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-1 text-gray-700">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={!pagination.hasNextPage}
-                  className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Removed raw data table and pagination controls */}
       </div>
     </div>
   );
