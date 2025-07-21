@@ -11,8 +11,8 @@ export function formatNumber(num: number): string {
   return new Intl.NumberFormat('en-US').format(num)
 }
 
-export function formatPercentage(value: number): string {
-  return `${(value * 100).toFixed(1)}%`
+export function formatPercentage(value: number | string): string {
+  return `${(Number(value) * 100).toFixed(1)}%`
 }
 
 export function formatDuration(minutes: number): string {
@@ -25,6 +25,6 @@ export function formatDuration(minutes: number): string {
   return `${mins}m`
 }
 
-export function formatDistance(miles: number): string {
-  return `${miles.toFixed(1)} mi`
+export function formatDistance(miles: number | string): string {
+  return `${Number(miles).toFixed(1)} mi`
 } 

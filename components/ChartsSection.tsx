@@ -64,7 +64,7 @@ function HourlyChart({ data }: { data: any[] }) {
     const hour = new Date(trip.pickup_datetime).getHours()
     if (!acc[hour]) acc[hour] = { count: 0, totalFare: 0 }
     acc[hour].count += 1
-    acc[hour].totalFare += trip.fare_amount
+    acc[hour].totalFare += Number(trip.fare_amount)
     return acc
   }, {} as Record<number, { count: number, totalFare: number }>)
 
@@ -113,7 +113,7 @@ function RevenueChart({ data }: { data: any[] }) {
   const revenueData = data.reduce((acc, trip) => {
     const date = new Date(trip.pickup_datetime).toISOString().split('T')[0]
     if (!acc[date]) acc[date] = { revenue: 0, trips: 0 }
-    acc[date].revenue += trip.fare_amount
+    acc[date].revenue += Number(trip.fare_amount)
     acc[date].trips += 1
     return acc
   }, {} as Record<string, { revenue: number, trips: number }>)
@@ -142,7 +142,7 @@ function RevenueChart({ data }: { data: any[] }) {
 }
 
 function DistanceChart({ data }: { data: any[] }) {
-  const distances = data.map(trip => trip.trip_distance)
+  const distances = data.map(trip => Number(trip.trip_distance)).filter(Boolean)
   
   const plotData = [{
     x: distances,
@@ -174,9 +174,8 @@ function PaymentChart({ data }: { data: any[] }) {
   }
 
   const paymentCounts = data.reduce((acc, trip) => {
-    const paymentType = trip.payment_type
-    const label = paymentLabels[paymentType as keyof typeof paymentLabels] || `Type ${paymentType}`
-    acc[label] = (acc[label] || 0) + 1
+    const type = trip.payment_type || 'Unknown'
+    acc[type] = (acc[type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 

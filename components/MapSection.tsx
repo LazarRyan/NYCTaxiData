@@ -127,8 +127,8 @@ export default function MapSection({ data }: MapSectionProps) {
                 <div className="p-2">
                   <h4 className="font-semibold">{(location as any).locationName || 'Trip Location'}</h4>
                   <p>Trips: {location.count}</p>
-                  <p>Avg Fare: ${location.avgFare.toFixed(2)}</p>
-                  <p>Total Revenue: ${location.totalFare.toFixed(2)}</p>
+                  <p>Avg Fare: ${Number(location.avgFare).toFixed(2)}</p>
+                  <p>Total Revenue: ${Number(location.totalFare).toFixed(2)}</p>
                 </div>
               </Popup>
             </CircleMarker>

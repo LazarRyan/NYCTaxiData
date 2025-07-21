@@ -24,21 +24,21 @@ export default function TaxiStats({ data }: TaxiStatsProps) {
           <div className="text-sm text-gray-600">Total Trips</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">${stats.avgFare.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-green-600">${Number(stats.avgFare).toFixed(2)}</div>
           <div className="text-sm text-gray-600">Avg Fare</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-yellow-600">${stats.avgTip.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-yellow-600">${Number(stats.avgTip).toFixed(2)}</div>
           <div className="text-sm text-gray-600">Avg Tip</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">${stats.totalRevenue.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-purple-600">${Number(stats.totalRevenue).toFixed(2)}</div>
           <div className="text-sm text-gray-600">Total Revenue</div>
         </div>
       </div>
       <div className="mt-4 text-center">
         <div className="text-lg font-semibold text-gray-700">
-          {stats.avgDistance.toFixed(2)} miles avg distance
+          {Number(stats.avgDistance).toFixed(2)} miles avg distance
         </div>
       </div>
     </div>
