@@ -36,14 +36,14 @@ services:
       PYTHONPATH: /opt/spark/python
       # Supabase configuration
       SUPABASE_DATABASE_URL: ${SUPABASE_DATABASE_URL}
+    ports:
+      - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./data:/opt/airflow/data
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./spark_jobs:/opt/airflow/spark_jobs
-    ports:
-      - "8080:8080"
     command: standalone
     healthcheck:
       test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]

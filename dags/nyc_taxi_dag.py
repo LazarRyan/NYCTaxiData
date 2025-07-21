@@ -93,19 +93,46 @@ def run_spark_processing(**context):
     # Get Supabase connection URL from environment
     supabase_url = os.getenv('SUPABASE_DATABASE_URL')
     
+    # Use local PostgreSQL if Supabase is not available
     if not supabase_url:
-        logging.error("SUPABASE_DATABASE_URL environment variable not set")
-        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
-    
-    # Parse Supabase URL to get connection details
-    from urllib.parse import urlparse
-    parsed_url = urlparse(supabase_url)
-    
-    db_host = parsed_url.hostname
-    db_port = parsed_url.port or 5432
-    db_name = parsed_url.path.lstrip('/')
-    db_user = parsed_url.username
-    db_password = parsed_url.password
+        logging.warning("SUPABASE_DATABASE_URL not set, using local PostgreSQL")
+        db_host = "postgres"
+        db_port = 5432
+        db_name = "nyc_taxi_data"
+        db_user = "airflow"
+        db_password = "airflow"
+    else:
+        try:
+            # Parse Supabase URL to get connection details
+            from urllib.parse import urlparse
+            parsed_url = urlparse(supabase_url)
+            
+            db_host = parsed_url.hostname
+            db_port = parsed_url.port or 5432
+            db_name = parsed_url.path.lstrip('/')
+            db_user = parsed_url.username
+            db_password = parsed_url.password
+            
+            # Test the connection
+            import psycopg2
+            test_conn = psycopg2.connect(
+                host=db_host,
+                port=db_port,
+                database=db_name,
+                user=db_user,
+                password=db_password,
+                connect_timeout=10
+            )
+            test_conn.close()
+            logging.info("Supabase connection successful, using Supabase")
+            
+        except Exception as e:
+            logging.warning(f"Supabase connection failed: {e}, falling back to local PostgreSQL")
+            db_host = "postgres"
+            db_port = 5432
+            db_name = "nyc_taxi_data"
+            db_user = "airflow"
+            db_password = "airflow"
     
     # First, drop and recreate the table with correct schema
     logging.info("Recreating table with correct schema...")
@@ -203,10 +230,10 @@ def run_spark_processing(**context):
         
         logging.info(f"Processed {processed_df.count()} valid trips")
         
-        # Save to Supabase using Spark JDBC
-        logging.info("Saving to Supabase using Spark JDBC...")
+        # Save to database using Spark JDBC
+        logging.info("Saving to database using Spark JDBC...")
         
-        # Build JDBC URL for Supabase
+        # Build JDBC URL
         jdbc_url = f"jdbc:postgresql://{db_host}:{db_port}/{db_name}"
         
         processed_df.write \
@@ -220,7 +247,7 @@ def run_spark_processing(**context):
             .mode("append") \
             .save()
         
-        logging.info("Data successfully saved to Supabase using Spark!")
+        logging.info("Data successfully saved to database using Spark!")
         
         # Show summary statistics using Spark
         total_trips = processed_df.count()
@@ -305,19 +332,45 @@ def create_zone_aggregations(**context):
     # Get Supabase connection URL from environment
     supabase_url = os.getenv('SUPABASE_DATABASE_URL')
     
+    # Use local PostgreSQL if Supabase is not available
     if not supabase_url:
-        logging.error("SUPABASE_DATABASE_URL environment variable not set")
-        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
-    
-    # Parse Supabase URL to get connection details
-    from urllib.parse import urlparse
-    parsed_url = urlparse(supabase_url)
-    
-    db_host = parsed_url.hostname
-    db_port = parsed_url.port or 5432
-    db_name = parsed_url.path.lstrip('/')
-    db_user = parsed_url.username
-    db_password = parsed_url.password
+        logging.warning("SUPABASE_DATABASE_URL not set, using local PostgreSQL")
+        db_host = "postgres"
+        db_port = 5432
+        db_name = "nyc_taxi_data"
+        db_user = "airflow"
+        db_password = "airflow"
+    else:
+        try:
+            # Parse Supabase URL to get connection details
+            from urllib.parse import urlparse
+            parsed_url = urlparse(supabase_url)
+            
+            db_host = parsed_url.hostname
+            db_port = parsed_url.port or 5432
+            db_name = parsed_url.path.lstrip('/')
+            db_user = parsed_url.username
+            db_password = parsed_url.password
+            
+            # Test the connection
+            test_conn = psycopg2.connect(
+                host=db_host,
+                port=db_port,
+                database=db_name,
+                user=db_user,
+                password=db_password,
+                connect_timeout=10
+            )
+            test_conn.close()
+            logging.info("Supabase connection successful, using Supabase")
+            
+        except Exception as e:
+            logging.warning(f"Supabase connection failed: {e}, falling back to local PostgreSQL")
+            db_host = "postgres"
+            db_port = 5432
+            db_name = "nyc_taxi_data"
+            db_user = "airflow"
+            db_password = "airflow"
     
     try:
         # Read zone lookup data
@@ -337,7 +390,7 @@ def create_zone_aggregations(**context):
             logging.info("No GeoJSON file available - using simplified zone mapping")
             geojson_data = None
         
-        # Connect to Supabase database
+        # Connect to database
         conn = psycopg2.connect(
             host=db_host,
             port=db_port,
@@ -418,10 +471,11 @@ def create_zone_aggregations(**context):
         """)
         
         # Combine pickup and dropoff data
-        combined_df = pickup_df.merge(
-            dropoff_df[['dropoff_location_id', 'trip_count', 'total_revenue', 'avg_distance', 'avg_duration', 'avg_tip_percentage', 'dropoff_zone', 'dropoff_borough']],
-            left_on='pickup_location_id',
-            right_on='dropoff_location_id',
+        combined_df = pd.merge(
+            pickup_df, 
+            dropoff_df, 
+            left_on='pickup_location_id', 
+            right_on='dropoff_location_id', 
             how='outer',
             suffixes=('_pickup', '_dropoff')
         )
@@ -433,8 +487,12 @@ def create_zone_aggregations(**context):
         combined_df['total_trips'] = combined_df['trip_count_pickup'] + combined_df['trip_count_dropoff']
         combined_df['total_revenue'] = combined_df['total_revenue_pickup'] + combined_df['total_revenue_dropoff']
         
-        # Insert into database
+        # Insert data into zone_aggregations table
         for _, row in combined_df.iterrows():
+            location_id = row.get('pickup_location_id') or row.get('dropoff_location_id')
+            zone_name = row.get('pickup_zone') or row.get('dropoff_zone') or 'Unknown'
+            borough = row.get('pickup_borough') or row.get('dropoff_borough') or 'Unknown'
+            
             cursor.execute("""
                 INSERT INTO zone_aggregations (
                     location_id, zone_name, borough,
@@ -443,9 +501,9 @@ def create_zone_aggregations(**context):
                     total_trips, total_revenue
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                row['pickup_location_id'],
-                row['pickup_zone'] or row['dropoff_zone'],
-                row['pickup_borough'] or row['dropoff_borough'],
+                location_id,
+                zone_name,
+                borough,
                 row['trip_count_pickup'],
                 row['total_revenue_pickup'],
                 row['avg_distance_pickup'],
@@ -497,61 +555,33 @@ download_data_task = PythonOperator(
     dag=dag,
 )
 
-# Task 2: Run PySpark processing
+# Task 2: Run PySpark processing (includes table creation)
 spark_processing_task = PythonOperator(
     task_id='spark_processing_task',
     python_callable=run_spark_processing,
     dag=dag,
 )
 
-# Task 3: Create database tables (if they don't exist)
-create_tables_task = PostgresOperator(
-    task_id='create_tables_task',
-    postgres_conn_id='postgres_default',
-    sql="""
-    CREATE TABLE IF NOT EXISTS taxi_trips (
-        id SERIAL PRIMARY KEY,
-        pickup_datetime TIMESTAMP,
-        dropoff_datetime TIMESTAMP,
-        pickup_location_id INTEGER,
-        dropoff_location_id INTEGER,
-        trip_distance DECIMAL(10,2),
-        fare_amount DECIMAL(10,2),
-        tip_amount DECIMAL(10,2),
-        total_amount DECIMAL(10,2),
-        payment_type INTEGER,
-        trip_duration_minutes INTEGER,
-        tip_percentage DECIMAL(8,2),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_pickup_datetime ON taxi_trips(pickup_datetime);
-    CREATE INDEX IF NOT EXISTS idx_pickup_location ON taxi_trips(pickup_location_id);
-    CREATE INDEX IF NOT EXISTS idx_dropoff_location ON taxi_trips(dropoff_location_id);
-    """,
-    dag=dag,
-)
-
-# Task 4: Download taxi zone data
+# Task 3: Download taxi zone data
 download_zones_task = PythonOperator(
     task_id='download_zones_task',
     python_callable=download_taxi_zones,
     dag=dag,
 )
 
-# Task 5: Create zone aggregations
+# Task 4: Create zone aggregations
 zone_aggregations_task = PythonOperator(
     task_id='zone_aggregations_task',
     python_callable=create_zone_aggregations,
     dag=dag,
 )
 
-# Task 6: Update Streamlit metrics
+# Task 5: Update Streamlit metrics
 update_metrics_task = PythonOperator(
     task_id='update_metrics_task',
     python_callable=update_streamlit_metrics,
     dag=dag,
 )
 
-# Define task dependencies
-download_data_task >> create_tables_task >> spark_processing_task >> download_zones_task >> zone_aggregations_task >> update_metrics_task 
+# Define task dependencies (removed create_tables_task since it's handled in spark_processing_task)
+download_data_task >> spark_processing_task >> download_zones_task >> zone_aggregations_task >> update_metrics_task 
