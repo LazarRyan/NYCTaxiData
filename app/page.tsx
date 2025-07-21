@@ -9,30 +9,15 @@ import TimeSeriesChart from '@/components/analytics/TimeSeriesChart';
 import PaymentTypeChart from '@/components/analytics/PaymentTypeChart';
 import Histograms from '@/components/analytics/Histograms';
 import TopZones from '@/components/analytics/TopZones';
-import { TaxiTrip } from '@/lib/database';
 import { saveAs } from 'file-saver';
-
-interface ApiResponse {
-  data: TaxiTrip[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalRecords: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
-}
 
 // Helper function to get default date range (accounting for NYC TLC data lag)
 function getDefaultDateRange() {
   const now = new Date();
-  
   // NYC TLC data is typically available 2-3 months after the actual month
   // For demo purposes, let's use a recent available month (e.g., 3 months ago)
   const endDate = new Date(now.getFullYear(), now.getMonth() - 3, 1); // Start of 3 months ago
   const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1); // Start of that month
-  
   return {
     startDate: startDate.toISOString(),
     endDate: new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0, 23, 59, 59, 999).toISOString() // End of that month
@@ -43,11 +28,11 @@ export default function Home() {
   const defaultRange = getDefaultDateRange();
   const [startDate, setStartDate] = useState(defaultRange.startDate);
   const [endDate, setEndDate] = useState(defaultRange.endDate);
-  const [data, setData] = useState<TaxiTrip[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchStats = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -59,45 +44,22 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const result: ApiResponse = await response.json();
-      setData(result.data);
+      const result = await response.json();
+      setStats(result.stats);
     } catch (err) {
-      console.error('Error fetching data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      console.error('Error fetching stats:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch statistics');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchStats();
   }, [startDate, endDate]);
 
   const handleDateChange = () => {
-    fetchData();
-  };
-
-  // Download CSV handler
-  const handleDownloadCSV = async () => {
-    try {
-      const params = new URLSearchParams({
-        startDate,
-        endDate,
-        page: '1',
-        pageSize: '10000000', // large number to get all rows
-      });
-      const response = await fetch(`/api/taxi-data?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const result = await response.json();
-      const rows = result.data;
-      if (!rows || rows.length === 0) throw new Error('No data to download');
-      const header = Object.keys(rows[0]);
-      const csv = [header.join(','), ...rows.map((row: Record<string, any>) => header.map(h => JSON.stringify(row[h] ?? '')).join(','))].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, 'nyc_taxi_data.csv');
-    } catch (err) {
-      alert('Download failed: ' + (err instanceof Error ? err.message : err));
-    }
+    fetchStats();
   };
 
   return (
@@ -137,12 +99,6 @@ export default function Home() {
               >
                 Update Data
               </button>
-              <button
-                onClick={handleDownloadCSV}
-                className="btn-secondary w-full transition-card"
-              >
-                Download CSV
-              </button>
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-2">
@@ -153,7 +109,7 @@ export default function Home() {
         {/* Analytics Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="transition-card animate-fade-in">
-            <TaxiStats data={data} />
+            <TaxiStats stats={stats} loading={loading} error={error} />
           </div>
           <div className="transition-card animate-fade-in delay-100">
             <ZoneHeatmap startDate={startDate} endDate={endDate} />
