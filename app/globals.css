@@ -94,3 +94,12 @@
     opacity: 1;
   }
 } 
+
+input[type="datetime-local"] {
+  background-color: #fff;
+  color: #222;
+  border: 1px solid #ccc;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+} 
