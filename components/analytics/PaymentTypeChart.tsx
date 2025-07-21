@@ -51,29 +51,32 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
       {loading && <div>Loading payment types...</div>}
       {error && <div className="text-red-600">{error}</div>}
       {!loading && !error && (
-        <Plot
-          data={[
-            {
-              labels: labels,
-              values: tripCounts,
-              type: 'pie',
-              textinfo: 'label+percent',
-              hoverinfo: 'label+value+percent',
-              marker: {
-                colors: ['#3b82f6', '#10b981', '#f59e42', '#f43f5e', '#6366f1', '#fbbf24'],
+        <div className="w-full max-w-[400px] mx-auto">
+          <Plot
+            data={[
+              {
+                labels: labels,
+                values: tripCounts,
+                type: 'pie',
+                textinfo: 'label+percent',
+                hoverinfo: 'label+value+percent',
+                marker: {
+                  colors: ['#3b82f6', '#10b981', '#f59e42', '#f43f5e', '#6366f1', '#fbbf24'],
+                },
               },
-            },
-          ]}
-          layout={{
-            title: { text: '' },
-            showlegend: true,
-            legend: { orientation: 'h', x: 0.5, xanchor: 'center' },
-            height: chartHeight,
-            width: undefined,
-            margin: { l: 50, r: 30, t: 40, b: 50 },
-          }}
-          config={{ displayModeBar: false, responsive: true }}
-        />
+            ]}
+            layout={{
+              title: { text: '' },
+              showlegend: true,
+              legend: { orientation: 'h', x: 0.5, xanchor: 'center' },
+              height: chartHeight,
+              width: undefined,
+              margin: { l: 50, r: 30, t: 40, b: 50 },
+            }}
+            config={{ displayModeBar: false, responsive: true }}
+            style={{ width: '100%' }}
+          />
+        </div>
       )}
     </div>
   );
