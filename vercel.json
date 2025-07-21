@@ -9,5 +9,10 @@
     "app/api/taxi-data/route.ts": {
       "maxDuration": 30
     }
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
   }
 } 
