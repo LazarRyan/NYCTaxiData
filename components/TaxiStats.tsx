@@ -9,6 +9,7 @@ interface TaxiStatsProps {
 }
 
 export default function TaxiStats({ data, loading = false, error = null }: TaxiStatsProps) {
+  console.log('TaxiStats data:', data);
   if (loading) {
     return <div className="bg-white rounded-lg shadow-md p-6 text-center">Loading statistics...</div>;
   }
