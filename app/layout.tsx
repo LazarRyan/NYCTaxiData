@@ -8,9 +8,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'NYC Taxi Analytics Dashboard',
   description: 'Interactive dashboard for NYC Yellow Taxi Trip data analysis',
-  icons: {
-    icon: '🚕',
-  },
+  // icons: {
+  //   icon: '🚕',
+  // },
 }
 
 export default function RootLayout({

@@ -63,6 +63,9 @@ export default function ZoneHeatmap({ startDate, endDate }: { startDate: string;
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
+  if (error) {
+    return <div className="bg-white rounded-lg shadow-md p-6 mb-8 text-red-600">{error}</div>;
+  }
   if (!geojson) {
     return <div className="bg-white rounded-lg shadow-md p-6 mb-8">Loading map...</div>;
   }
