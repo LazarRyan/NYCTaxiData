@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     // Then get paginated data
     const dataQuery = `
       SELECT 
+        id,
         pickup_datetime,
         dropoff_datetime,
         pickup_location_id,
