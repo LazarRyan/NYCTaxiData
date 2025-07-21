@@ -52,9 +52,10 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
             yaxis3: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', position: 0.95, showgrid: false },
             legend: { orientation: 'h' },
             height: 450,
+            width: undefined,
             margin: { l: 50, r: 50, t: 20, b: 50 },
           }}
-          config={{ displayModeBar: false }}
+          config={{ displayModeBar: false, responsive: true }}
         />
       )}
     </div>

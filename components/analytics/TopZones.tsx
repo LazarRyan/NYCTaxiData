@@ -56,9 +56,9 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
                 tickangle: 60,
               },
               yaxis: { title: { text: 'Trips' } },
-              height: 300,
+              height: 350,
+              width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
-              width: 500,
             }}
             config={{ responsive: true }}
           />
@@ -79,9 +79,9 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
                 tickangle: 60,
               },
               yaxis: { title: { text: 'Trips' } },
-              height: 300,
+              height: 350,
+              width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
-              width: 500,
             }}
             config={{ responsive: true }}
           />

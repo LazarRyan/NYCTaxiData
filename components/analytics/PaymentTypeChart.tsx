@@ -65,9 +65,10 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
             showlegend: true,
             legend: { orientation: 'h' },
             height: 350,
+            width: undefined,
             margin: { l: 30, r: 30, t: 20, b: 30 },
           }}
-          config={{ displayModeBar: false }}
+          config={{ displayModeBar: false, responsive: true }}
         />
       )}
     </div>

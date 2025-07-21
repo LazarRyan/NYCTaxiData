@@ -68,18 +68,24 @@ export default function Home() {
             <ZoneHeatmap startDate={startDate} endDate={endDate} />
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* TimeSeriesChart: full width row */}
+        <div className="mb-8">
           <div className="transition-card animate-fade-in delay-200">
             <TimeSeriesChart startDate={startDate} endDate={endDate} />
           </div>
-          <div className="transition-card animate-fade-in delay-300">
+        </div>
+        {/* PaymentTypeChart: full width row, centered on large screens */}
+        <div className="mb-8 flex justify-center">
+          <div className="transition-card animate-fade-in delay-300 w-full max-w-2xl">
             <PaymentTypeChart startDate={startDate} endDate={endDate} />
           </div>
         </div>
+        {/* Histograms: two-column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="transition-card animate-fade-in delay-400">
             <Histograms startDate={startDate} endDate={endDate} />
           </div>
+          {/* TopZones: two-column grid */}
           <div className="transition-card animate-fade-in delay-500">
             <TopZones startDate={startDate} endDate={endDate} />
           </div>
