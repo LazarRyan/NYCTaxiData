@@ -51,14 +51,14 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              xaxis: {
-                title: { text: 'Zone' },
-                tickangle: 25,
-              },
-              yaxis: { title: { text: 'Trips' } },
-              height: 350,
+              height: 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
+              xaxis: {
+                title: { text: 'Zone' },
+                tickangle: 45,
+              },
+              yaxis: { title: { text: 'Trips' } },
             }}
             config={{ responsive: true }}
           />
@@ -74,14 +74,14 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              xaxis: {
-                title: { text: 'Zone' },
-                tickangle: 25,
-              },
-              yaxis: { title: { text: 'Trips' } },
-              height: 350,
+              height: 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
+              xaxis: {
+                title: { text: 'Zone' },
+                tickangle: 45,
+              },
+              yaxis: { title: { text: 'Trips' } },
             }}
             config={{ responsive: true }}
           />
