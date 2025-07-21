@@ -11,7 +11,8 @@ interface ZoneHeatmapDatum {
 interface Feature {
   type: 'Feature';
   properties: {
-    locationid: number;
+    locationid?: number;
+    LocationID?: number;
     zone: string;
     borough: string;
   };
@@ -108,7 +109,7 @@ export default function ZoneHeatmap({ startDate, endDate }: { startDate: string;
       <div className="flex justify-center">
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ background: '#f0f0f0', borderRadius: 12 }}>
           {geojson.features.map((feature: Feature, i: number) => {
-            const id = feature.properties.locationid;
+            const id = feature.properties.LocationID || feature.properties.locationid;
             const stat = zoneStats.get(Number(id));
             const count = stat ? Number(stat.trip_count) : 0;
             const revenue = stat ? Number(stat.total_revenue) : 0;
