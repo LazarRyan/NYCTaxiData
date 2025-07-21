@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useWindowSize } from '@/utils/useWindowSize';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
@@ -41,6 +42,9 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
   const tripCounts = filteredData.map(d => Number(d.trip_count));
   const revenues = filteredData.map(d => Number(d.total_revenue));
 
+  const { width } = useWindowSize();
+  const chartHeight = width < 640 ? 200 : 400;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
       <h2 className="text-xl font-semibold mb-4">Payment Type Breakdown</h2>
@@ -64,7 +68,7 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
             title: { text: '' },
             showlegend: true,
             legend: { orientation: 'h', x: 0.5, xanchor: 'center' },
-            height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
+            height: chartHeight,
             width: undefined,
             margin: { l: 50, r: 30, t: 40, b: 50 },
           }}

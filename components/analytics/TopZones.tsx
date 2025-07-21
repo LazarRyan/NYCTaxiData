@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { getLocationName } from '@/lib/locationMapping';
+import { useWindowSize } from '@/utils/useWindowSize';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
@@ -37,6 +38,9 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
   const maxDropoff = Math.max(...dropoffs.map(d => Number(d.trip_count) || 0), 0);
   const maxY = Math.max(maxPickup, maxDropoff);
 
+  const { width } = useWindowSize();
+  const chartHeight = width < 640 ? 250 : 500;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Top Pickup & Dropoff Zones</h2>
@@ -56,7 +60,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 250 : 500,
+              height: chartHeight,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
@@ -80,7 +84,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 250 : 500,
+              height: chartHeight,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {

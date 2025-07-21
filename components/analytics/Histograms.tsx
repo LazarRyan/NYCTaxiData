@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useWindowSize } from '@/utils/useWindowSize';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
@@ -16,6 +17,9 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
   const [duration, setDuration] = useState<HistogramDatum[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { width } = useWindowSize();
+  const chartHeight = width < 640 ? 200 : 400;
 
   useEffect(() => {
     setLoading(true);
@@ -51,7 +55,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Distance Histogram' },
               xaxis: { title: { text: 'Distance (mi, binned)' }, range: [0, 40] },
               yaxis: { title: { text: 'Trips' } },
-              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
+              height: chartHeight,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}
@@ -70,7 +74,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Duration Histogram' },
               xaxis: { title: { text: 'Duration (min, binned)' } },
               yaxis: { title: { text: 'Trips' } },
-              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
+              height: chartHeight,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}
