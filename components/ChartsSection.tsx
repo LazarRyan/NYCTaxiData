@@ -13,95 +13,95 @@ interface ChartsSectionProps {
 }
 
 export default function ChartsSection({ data, filters }: ChartsSectionProps) {
-  const [activeTab, setActiveTab] = useState('hourly')
+  const [activeChart, setActiveChart] = useState('hourly')
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="chart-container">
-        <p className="text-gray-500 text-center">No data available for the selected filters</p>
-      </div>
-    )
-  }
-
-  const tabs = [
-    { id: 'hourly', label: 'Hourly Analysis' },
-    { id: 'revenue', label: 'Revenue Analysis' },
-    { id: 'distance', label: 'Distance Analysis' },
-    { id: 'payment', label: 'Payment Types' }
+  const charts = [
+    { id: 'hourly', name: 'Hourly Analysis', component: HourlyChart },
+    { id: 'revenue', name: 'Revenue Trend', component: RevenueChart },
+    { id: 'distance', name: 'Distance Distribution', component: DistanceChart },
+    { id: 'payment', name: 'Payment Types', component: PaymentChart }
   ]
 
+  const ActiveChartComponent = charts.find(chart => chart.id === activeChart)?.component || HourlyChart
+
   return (
-    <div className="chart-container">
-      <div className="flex space-x-1 mb-6">
-        {tabs.map((tab) => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4">Analytics Charts</h2>
+      
+      {/* Chart Type Selector */}
+      <div className="flex space-x-2 mb-6">
+        {charts.map((chart) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-blue-500 text-white'
+            key={chart.id}
+            onClick={() => setActiveChart(chart.id)}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeChart === chart.id
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            {tab.label}
+            {chart.name}
           </button>
         ))}
       </div>
 
+      {/* Chart Container */}
       <motion.div
-        key={activeTab}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        key={activeChart}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="h-96"
+        className="w-full"
       >
-        {activeTab === 'hourly' && <HourlyChart data={data} />}
-        {activeTab === 'revenue' && <RevenueChart data={data} />}
-        {activeTab === 'distance' && <DistanceChart data={data} />}
-        {activeTab === 'payment' && <PaymentChart data={data} />}
+        <ActiveChartComponent data={data} />
       </motion.div>
     </div>
   )
 }
 
 function HourlyChart({ data }: { data: any[] }) {
-  const hourlyData = Array.from({ length: 24 }, (_, hour) => {
-    const hourTrips = data.filter(trip => {
-      const pickupHour = new Date(trip.pickup_datetime).getHours()
-      return pickupHour === hour
-    })
-    return {
-      hour,
-      count: hourTrips.length,
-      avgFare: hourTrips.length > 0 
-        ? hourTrips.reduce((sum, trip) => sum + trip.fare_amount, 0) / hourTrips.length 
-        : 0
-    }
-  })
+  const hourlyData = data.reduce((acc, trip) => {
+    const hour = new Date(trip.pickup_datetime).getHours()
+    if (!acc[hour]) acc[hour] = { count: 0, totalFare: 0 }
+    acc[hour].count += 1
+    acc[hour].totalFare += trip.fare_amount
+    return acc
+  }, {} as Record<number, { count: number, totalFare: number }>)
+
+  const hours = Array.from({ length: 24 }, (_, i) => i)
+  const counts = hours.map(hour => hourlyData[hour]?.count || 0)
+  const avgFares = hours.map(hour => 
+    hourlyData[hour]?.count ? hourlyData[hour].totalFare / hourlyData[hour].count : 0
+  )
 
   const plotData = [
     {
-      x: hourlyData.map(d => d.hour),
-      y: hourlyData.map(d => d.count),
+      x: hours,
+      y: counts,
       type: 'bar' as const,
       name: 'Trip Count',
       marker: { color: '#3b82f6' }
     },
     {
-      x: hourlyData.map(d => d.hour),
-      y: hourlyData.map(d => d.avgFare),
+      x: hours,
+      y: avgFares,
       type: 'scatter' as const,
-      name: 'Avg Fare',
+      mode: 'lines+markers' as const,
+      name: 'Average Fare',
       yaxis: 'y2',
-      marker: { color: '#ef4444' }
+      line: { color: '#ef4444' }
     }
   ]
 
   const layout = {
-    title: 'Hourly Trip Analysis',
-    xaxis: { title: 'Hour of Day' },
-    yaxis: { title: 'Trip Count' },
-    yaxis2: { title: 'Average Fare ($)', overlaying: 'y', side: 'right' },
+    title: { text: 'Hourly Trip Analysis' },
+    xaxis: { title: { text: 'Hour of Day' } },
+    yaxis: { title: { text: 'Trip Count' } },
+    yaxis2: { 
+      title: { text: 'Average Fare ($)' }, 
+      overlaying: 'y' as const, 
+      side: 'right' as const
+    },
     height: 350,
     margin: { l: 50, r: 50, t: 50, b: 50 }
   }
@@ -131,9 +131,9 @@ function RevenueChart({ data }: { data: any[] }) {
   }]
 
   const layout = {
-    title: 'Daily Revenue Trend',
-    xaxis: { title: 'Date' },
-    yaxis: { title: 'Revenue ($)' },
+    title: { text: 'Daily Revenue Trend' },
+    xaxis: { title: { text: 'Date' } },
+    yaxis: { title: { text: 'Revenue ($)' } },
     height: 350,
     margin: { l: 50, r: 50, t: 50, b: 50 }
   }
@@ -153,9 +153,9 @@ function DistanceChart({ data }: { data: any[] }) {
   }]
 
   const layout = {
-    title: 'Trip Distance Distribution',
-    xaxis: { title: 'Distance (miles)' },
-    yaxis: { title: 'Frequency' },
+    title: { text: 'Trip Distance Distribution' },
+    xaxis: { title: { text: 'Distance (miles)' } },
+    yaxis: { title: { text: 'Frequency' } },
     height: 350,
     margin: { l: 50, r: 50, t: 50, b: 50 }
   }
@@ -181,7 +181,7 @@ function PaymentChart({ data }: { data: any[] }) {
   }, {} as Record<string, number>)
 
   const plotData = [{
-    values: Object.values(paymentCounts),
+    values: Object.values(paymentCounts) as number[],
     labels: Object.keys(paymentCounts),
     type: 'pie' as const,
     name: 'Payment Types',
@@ -191,7 +191,7 @@ function PaymentChart({ data }: { data: any[] }) {
   }]
 
   const layout = {
-    title: 'Payment Type Distribution',
+    title: { text: 'Payment Type Distribution' },
     height: 350,
     margin: { l: 50, r: 50, t: 50, b: 50 }
   }
