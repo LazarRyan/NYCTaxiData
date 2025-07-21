@@ -60,22 +60,28 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-white mb-2 drop-shadow">NYC Taxi Data Dashboard</h1>
           <div className="text-lg text-gray-200 font-medium drop-shadow">Data shown: {displayRange}</div>
         </div>
-        {/* Top section: Timeseries and Top Zones stacked vertically, full width */}
-        <div className="flex flex-col gap-8 mb-8 w-full">
-          <div className="transition-card animate-fade-in w-full">
-            <TimeSeriesChart startDate={startDate} endDate={endDate} />
+        <div className="flex flex-col gap-8 mb-8">
+          <div className="transition-card animate-fade-in">
+            <TaxiStats stats={stats} loading={loading} error={error} />
           </div>
-          <div className="transition-card animate-fade-in w-full">
-            <TopZones startDate={startDate} endDate={endDate} />
+          <div className="transition-card animate-fade-in">
+            <ZoneHeatmap startDate={startDate} endDate={endDate} />
           </div>
         </div>
-        {/* Bottom section: Payment Type and Histograms side-by-side */}
-        <div className="flex flex-row gap-8 w-full">
-          <div className="transition-card animate-fade-in flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="transition-card animate-fade-in delay-200">
+            <TimeSeriesChart startDate={startDate} endDate={endDate} />
+          </div>
+          <div className="transition-card animate-fade-in delay-300">
             <PaymentTypeChart startDate={startDate} endDate={endDate} />
           </div>
-          <div className="transition-card animate-fade-in flex-1">
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="transition-card animate-fade-in delay-400">
             <Histograms startDate={startDate} endDate={endDate} />
+          </div>
+          <div className="transition-card animate-fade-in delay-500">
+            <TopZones startDate={startDate} endDate={endDate} />
           </div>
         </div>
       </div>
