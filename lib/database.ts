@@ -1,6 +1,6 @@
 import { Pool } from 'pg'
 
-// Create a connection pool
+// Create a connection pool with better error handling
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
@@ -9,9 +9,25 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'airflow',
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000, // Increased timeout
+  ssl: process.env.NODE_ENV === 'production' ? { 
+    rejectUnauthorized: false
+  } : false,
 })
+
+// Test connection function
+export async function testConnection() {
+  try {
+    const client = await pool.connect()
+    await client.query('SELECT NOW()')
+    client.release()
+    console.log('Database connection successful')
+    return true
+  } catch (error) {
+    console.error('Database connection failed:', error)
+    return false
+  }
+}
 
 // Generic query function for custom queries
 export async function query(text: string, params: string[] = []) {

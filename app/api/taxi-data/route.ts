@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/database';
+import { query, testConnection } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
   try {
+    // Test connection first
+    const isConnected = await testConnection();
+    if (!isConnected) {
+      console.error('Database connection failed');
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
+    }
+
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -13,6 +20,14 @@ export async function GET(request: NextRequest) {
     if (!startDate || !endDate) {
       return NextResponse.json({ error: 'Start date and end date are required' }, { status: 400 });
     }
+
+    console.log('Environment variables:', {
+      DB_HOST: process.env.DB_HOST,
+      DB_PORT: process.env.DB_PORT,
+      DB_NAME: process.env.DB_NAME,
+      DB_USER: process.env.DB_USER,
+      NODE_ENV: process.env.NODE_ENV
+    });
 
     // First, get total count for pagination info
     const countQuery = `
