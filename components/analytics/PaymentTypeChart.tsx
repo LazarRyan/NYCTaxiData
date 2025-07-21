@@ -42,7 +42,7 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
   const revenues = filteredData.map(d => Number(d.total_revenue));
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
       <h2 className="text-xl font-semibold mb-4">Payment Type Breakdown</h2>
       {loading && <div>Loading payment types...</div>}
       {error && <div className="text-red-600">{error}</div>}
@@ -64,7 +64,7 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
             title: { text: '' },
             showlegend: true,
             legend: { orientation: 'h', x: 0.5, xanchor: 'center' },
-            height: 400,
+            height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
             width: undefined,
             margin: { l: 50, r: 30, t: 40, b: 50 },
           }}

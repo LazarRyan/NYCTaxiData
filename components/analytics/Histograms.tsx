@@ -31,7 +31,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
   }, [startDate, endDate]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
       <h2 className="text-xl font-semibold mb-4">Trip Distance & Duration Histograms</h2>
       {loading && <div>Loading histograms...</div>}
       {error && <div className="text-red-600">{error}</div>}
@@ -51,7 +51,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Distance Histogram' },
               xaxis: { title: { text: 'Distance (mi, binned)' }, range: [0, 40] },
               yaxis: { title: { text: 'Trips' } },
-              height: 400,
+              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}
@@ -70,7 +70,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Duration Histogram' },
               xaxis: { title: { text: 'Duration (min, binned)' } },
               yaxis: { title: { text: 'Trips' } },
-              height: 400,
+              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 400,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}

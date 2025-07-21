@@ -38,7 +38,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
   const maxY = Math.max(maxPickup, maxDropoff);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-0">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Top Pickup & Dropoff Zones</h2>
       {loading && <div>Loading top zones...</div>}
       {error && <div className="text-red-600">{error}</div>}
@@ -56,7 +56,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              height: 500,
+              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 250 : 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
@@ -80,7 +80,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              height: 500,
+              height: typeof window !== 'undefined' && window.innerWidth < 640 ? 250 : 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {

@@ -103,11 +103,11 @@ export default function ZoneHeatmap({ startDate, endDate }: { startDate: string;
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-0">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Zone Heatmap</h2>
       {error && <div className="text-red-600">{error}</div>}
-      <div className="flex justify-center">
-        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ background: '#f0f0f0', borderRadius: 12 }}>
+      <div className="w-full max-w-[600px] mx-auto">
+        <svg width="100%" height="auto" viewBox={`0 0 ${width} ${height}`} style={{ background: '#f0f0f0', borderRadius: 12 }}>
           {geojson.features.map((feature: Feature, i: number) => {
             const id = feature.properties.LocationID || feature.properties.locationid;
             const stat = zoneStats.get(Number(id));

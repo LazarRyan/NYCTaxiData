@@ -38,7 +38,7 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
   const tips = filteredData.map(d => Number(d.total_tip));
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-8">
       <h2 className="text-xl font-semibold mb-4">Revenue & Tips by Hour of Day</h2>
       {loading && <div>Loading hourly data...</div>}
       {error && <div className="text-red-600">{error}</div>}
@@ -54,7 +54,7 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
             yaxis: { title: { text: 'Revenue ($)' }, side: 'left', automargin: true },
             yaxis2: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', showgrid: false, automargin: true },
             legend: { orientation: 'h' },
-            height: 450,
+            height: typeof window !== 'undefined' && window.innerWidth < 640 ? 250 : 450,
             width: undefined,
             margin: { l: 20, r: 40, t: 20, b: 50 },
           }}
