@@ -66,7 +66,7 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
             legend: { orientation: 'h', x: 0.5, xanchor: 'center' },
             height: 400,
             width: undefined,
-            margin: { l: 30, r: 30, t: 20, b: 30 },
+            margin: { l: 50, r: 30, t: 40, b: 50 },
           }}
           config={{ displayModeBar: false, responsive: true }}
         />
