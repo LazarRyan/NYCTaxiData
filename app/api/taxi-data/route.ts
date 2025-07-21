@@ -18,19 +18,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Start date and end date are required' }, { status: 400 });
     }
 
-    // Query for summary statistics
+    // Query summary stats from the summary table
     const statsQuery = `
       SELECT 
-        COUNT(*) as total_trips,
-        AVG(fare_amount) as avg_fare,
-        AVG(tip_amount) as avg_tip,
-        SUM(total_amount) as total_revenue,
-        AVG(trip_distance) as avg_distance
-      FROM taxi_trips 
-      WHERE pickup_datetime >= $1 AND pickup_datetime <= $2
+        SUM(total_trips) as total_trips,
+        AVG(avg_fare) as avg_fare,
+        AVG(avg_tip) as avg_tip,
+        SUM(total_revenue) as total_revenue,
+        AVG(avg_distance) as avg_distance
+      FROM taxi_trip_summary
+      WHERE stat_date >= $1 AND stat_date <= $2
     `;
-    const statsResult = await query(statsQuery, [startDate, endDate]);
+    const statsResult = await query(statsQuery, [startDate.slice(0, 10), endDate.slice(0, 10)]);
     const stats = statsResult.rows[0];
+
+    if (!stats || stats.total_trips === null) {
+      return NextResponse.json({ error: 'No summary statistics found for the selected range' }, { status: 404 });
+    }
 
     return NextResponse.json({ stats });
   } catch (error) {

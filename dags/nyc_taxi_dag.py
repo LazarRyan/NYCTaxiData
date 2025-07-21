@@ -481,6 +481,70 @@ def create_zone_aggregations(**context):
         logging.error(f"Error creating zone aggregations: {str(e)}")
         raise
 
+def create_summary_stats(**context):
+    """
+    Aggregate daily summary statistics and upsert into summary table.
+    """
+    import psycopg2
+    import os
+    from urllib.parse import urlparse
+
+    supabase_url = os.getenv("SUPABASE_DATABASE_URL")
+    if not supabase_url:
+        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
+
+    parsed_url = urlparse(supabase_url)
+    db_host = parsed_url.hostname
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.path.lstrip('/')
+    db_user = parsed_url.username
+    db_password = parsed_url.password
+
+    conn = psycopg2.connect(
+        host=db_host,
+        port=db_port,
+        database=db_name,
+        user=db_user,
+        password=db_password,
+        sslmode='require'
+    )
+    cursor = conn.cursor()
+
+    # Upsert daily stats
+    cursor.execute("""
+        INSERT INTO taxi_trip_summary (stat_date, total_trips, avg_fare, avg_tip, total_revenue, avg_distance)
+        SELECT
+            DATE(pickup_datetime) as stat_date,
+            COUNT(*) as total_trips,
+            AVG(fare_amount) as avg_fare,
+            AVG(tip_amount) as avg_tip,
+            SUM(total_amount) as total_revenue,
+            AVG(trip_distance) as avg_distance
+        FROM taxi_trips
+        GROUP BY stat_date
+        ON CONFLICT (stat_date) DO UPDATE
+          SET total_trips = EXCLUDED.total_trips,
+              avg_fare = EXCLUDED.avg_fare,
+              avg_tip = EXCLUDED.avg_tip,
+              total_revenue = EXCLUDED.total_revenue,
+              avg_distance = EXCLUDED.avg_distance;
+    """)
+    conn.commit()
+    # Check for duplicates (should never happen with PRIMARY KEY, but for safety/logging)
+    cursor.execute("""
+        SELECT stat_date, COUNT(*) 
+        FROM taxi_trip_summary 
+        GROUP BY stat_date 
+        HAVING COUNT(*) > 1;
+    """)
+    duplicates = cursor.fetchall()
+    if duplicates:
+        logging.warning(f"Duplicate summary rows found: {duplicates}")
+    else:
+        logging.info("No duplicate summary rows found in taxi_trip_summary.")
+    cursor.close()
+    conn.close()
+
 def update_streamlit_metrics(**context):
     """
     Update Streamlit metrics and trigger dashboard refresh
@@ -528,7 +592,14 @@ zone_aggregations_task = PythonOperator(
     dag=dag,
 )
 
-# Task 5: Update Streamlit metrics
+# Task 5: Aggregate daily summary statistics
+summary_stats_task = PythonOperator(
+    task_id='summary_stats_task',
+    python_callable=create_summary_stats,
+    dag=dag,
+)
+
+# Task 6: Update Streamlit metrics
 update_metrics_task = PythonOperator(
     task_id='update_metrics_task',
     python_callable=update_streamlit_metrics,
@@ -536,4 +607,4 @@ update_metrics_task = PythonOperator(
 )
 
 # Define task dependencies (removed create_tables_task since it's handled in spark_processing_task)
-download_data_task >> spark_processing_task >> download_zones_task >> zone_aggregations_task >> update_metrics_task 
+download_data_task >> spark_processing_task >> download_zones_task >> zone_aggregations_task >> summary_stats_task >> update_metrics_task 
