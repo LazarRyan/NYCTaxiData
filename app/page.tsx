@@ -57,14 +57,14 @@ export default function Home() {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">NYC Taxi Data Dashboard</h1>
-          <div className="text-lg text-gray-700">Data shown: {displayRange}</div>
+          <h1 className="text-4xl font-bold text-white mb-2 drop-shadow">NYC Taxi Data Dashboard</h1>
+          <div className="text-lg text-gray-200 font-medium drop-shadow">Data shown: {displayRange}</div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="flex flex-col gap-8 mb-8">
           <div className="transition-card animate-fade-in">
             <TaxiStats stats={stats} loading={loading} error={error} />
           </div>
-          <div className="transition-card animate-fade-in delay-100">
+          <div className="transition-card animate-fade-in">
             <ZoneHeatmap startDate={startDate} endDate={endDate} />
           </div>
         </div>
