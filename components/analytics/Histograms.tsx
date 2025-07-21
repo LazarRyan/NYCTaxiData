@@ -31,7 +31,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
   }, [startDate, endDate]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4">Trip Distance & Duration Histograms</h2>
       {loading && <div>Loading histograms...</div>}
       {error && <div className="text-red-600">{error}</div>}
