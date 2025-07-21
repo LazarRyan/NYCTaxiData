@@ -99,14 +99,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
-          NYC Taxi Analytics Dashboard
-        </h1>
-        
+        {/* Header is now in layout.tsx */}
         {/* Date Range Selector */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="filter-container">
           <h2 className="text-xl font-semibold mb-4">Date Range</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -117,7 +114,7 @@ export default function Home() {
                 type="datetime-local"
                 value={startDate.slice(0, 16)}
                 onChange={(e) => setStartDate(new Date(e.target.value).toISOString())}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-modern w-full"
               />
             </div>
             <div>
@@ -128,19 +125,19 @@ export default function Home() {
                 type="datetime-local"
                 value={endDate.slice(0, 16)}
                 onChange={(e) => setEndDate(new Date(e.target.value).toISOString())}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-modern w-full"
               />
             </div>
             <div className="flex items-end space-x-2">
               <button
                 onClick={handleDateChange}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="btn-primary w-full transition-card"
               >
                 Update Data
               </button>
               <button
                 onClick={handleDownloadCSV}
-                className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                className="btn-secondary w-full transition-card"
               >
                 Download CSV
               </button>
@@ -153,20 +150,29 @@ export default function Home() {
 
         {/* Analytics Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <TaxiStats data={data} />
-          <ZoneHeatmap startDate={startDate} endDate={endDate} />
+          <div className="transition-card animate-fade-in">
+            <TaxiStats data={data} />
+          </div>
+          <div className="transition-card animate-fade-in delay-100">
+            <ZoneHeatmap startDate={startDate} endDate={endDate} />
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <TimeSeriesChart startDate={startDate} endDate={endDate} />
-          <PaymentTypeChart startDate={startDate} endDate={endDate} />
+          <div className="transition-card animate-fade-in delay-200">
+            <TimeSeriesChart startDate={startDate} endDate={endDate} />
+          </div>
+          <div className="transition-card animate-fade-in delay-300">
+            <PaymentTypeChart startDate={startDate} endDate={endDate} />
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <Histograms startDate={startDate} endDate={endDate} />
-          <TopZones startDate={startDate} endDate={endDate} />
+          <div className="transition-card animate-fade-in delay-400">
+            <Histograms startDate={startDate} endDate={endDate} />
+          </div>
+          <div className="transition-card animate-fade-in delay-500">
+            <TopZones startDate={startDate} endDate={endDate} />
+          </div>
         </div>
-
-        {/* Data Table (optional, paginated) */}
-        {/* Removed raw data table and pagination controls */}
       </div>
     </div>
   );

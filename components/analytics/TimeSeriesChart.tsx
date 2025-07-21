@@ -38,16 +38,16 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
       {!loading && !error && (
         <Plot
           data={[
-            { x: days, y: tripCounts, type: 'scatter', mode: 'lines+markers', name: 'Trips', line: { color: '#3b82f6' } },
-            { x: days, y: revenues, type: 'scatter', mode: 'lines+markers', name: 'Revenue', yaxis: 'y2', line: { color: '#10b981' } },
-            { x: days, y: avgFares, type: 'scatter', mode: 'lines+markers', name: 'Avg Fare', yaxis: 'y3', line: { color: '#f59e42' } },
+            { x: days, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
+            { x: days, y: revenues, type: 'bar', name: 'Revenue', marker: { color: '#10b981' }, yaxis: 'y2' },
+            { x: days, y: avgFares, type: 'scatter', mode: 'lines+markers', name: 'Avg Fare', yaxis: 'y3', line: { color: '#f59e42', width: 3, dash: 'dot' } },
           ]}
           layout={{
-            title: { text: '' },
+            barmode: 'group',
             xaxis: { title: { text: 'Date' } },
             yaxis: { title: { text: 'Trips' }, side: 'left' },
-            yaxis2: { title: { text: 'Revenue ($)' }, overlaying: 'y', side: 'right' },
-            yaxis3: { title: { text: 'Avg Fare ($)' }, overlaying: 'y', side: 'right', position: 0.95 },
+            yaxis2: { title: { text: 'Revenue ($)' }, overlaying: 'y', side: 'right', showgrid: false },
+            yaxis3: { title: { text: 'Avg Fare ($)' }, overlaying: 'y', side: 'right', position: 0.95, showgrid: false },
             legend: { orientation: 'h' },
             height: 350,
             margin: { l: 50, r: 50, t: 20, b: 50 },

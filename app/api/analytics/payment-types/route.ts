@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    console.log('Payment-types API called with:', { startDate, endDate });
 
     if (!startDate || !endDate) {
       return NextResponse.json({ error: 'Start date and end date are required' }, { status: 400 });
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       ORDER BY trip_count DESC
     `;
     const result = await query(sql, [startDate, endDate]);
+    console.log('Payment-types SQL result:', result);
     return NextResponse.json({ data: result.rows });
   } catch (error) {
     console.error('Payment types API error:', error);

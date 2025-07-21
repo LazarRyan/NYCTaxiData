@@ -4,62 +4,78 @@
 
 @layer base {
   html {
-    font-family: system-ui, sans-serif;
+    font-family: 'Inter', 'Urbanist', system-ui, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    color: #222;
+  }
+  body.dark {
+    background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+    color: #f3f4f6;
   }
 }
 
 @layer components {
+  .glass-card {
+    @apply bg-white/70 dark:bg-gray-900/60 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 p-6 transition-all duration-300;
+  }
   .main-header {
-    @apply text-5xl font-bold text-center mb-8;
-    background: linear-gradient(90deg, #1f77b4, #ff7f0e);
+    @apply text-6xl font-extrabold text-center mb-10 tracking-tight animate-fade-in;
+    background: linear-gradient(90deg, #ffde00 0%, #1f77b4 50%, #ff7f0e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .metric-card {
-    @apply bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg text-center;
+    @apply glass-card text-gray-900 dark:text-white text-center hover:scale-105 hover:shadow-2xl transition-transform duration-200;
   }
   
   .metric-value {
-    @apply text-3xl font-bold;
+    @apply text-4xl font-extrabold drop-shadow-lg;
   }
   
   .metric-label {
-    @apply text-sm opacity-90;
+    @apply text-base opacity-90 font-medium;
   }
   
   .chart-container {
-    @apply bg-white p-6 rounded-2xl shadow-lg my-4;
+    @apply glass-card my-4;
   }
   
   .filter-container {
-    @apply bg-white p-4 rounded-xl shadow-md mb-6;
+    @apply glass-card mb-6 sticky top-4 z-10;
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200;
+    @apply bg-gradient-to-r from-yellow-400 via-blue-500 to-orange-500 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:from-yellow-500 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200;
   }
   
   .btn-secondary {
-    @apply bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200;
+    @apply bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-200;
+  }
+  .input-modern {
+    @apply bg-white/80 dark:bg-gray-800/80 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 shadow-sm;
   }
 }
 
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(90deg, #1f77b4, #ff7f0e);
+    background: linear-gradient(90deg, #ffde00 0%, #1f77b4 50%, #ff7f0e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+  .glass {
+    @apply bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/40;
+  }
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
+  }
+  .transition-card {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
   }
 }
 

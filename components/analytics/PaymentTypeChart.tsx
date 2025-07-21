@@ -45,18 +45,23 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
       {!loading && !error && (
         <Plot
           data={[
-            { x: labels, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
-            { x: labels, y: revenues, type: 'bar', name: 'Revenue', marker: { color: '#10b981' }, yaxis: 'y2' },
+            {
+              labels: labels,
+              values: tripCounts,
+              type: 'pie',
+              textinfo: 'label+percent',
+              hoverinfo: 'label+value+percent',
+              marker: {
+                colors: ['#3b82f6', '#10b981', '#f59e42', '#f43f5e', '#6366f1', '#fbbf24'],
+              },
+            },
           ]}
           layout={{
             title: { text: '' },
-            barmode: 'group',
-            xaxis: { title: { text: 'Payment Type' } },
-            yaxis: { title: { text: 'Trips' } },
-            yaxis2: { title: { text: 'Revenue ($)' }, overlaying: 'y', side: 'right' },
+            showlegend: true,
             legend: { orientation: 'h' },
             height: 350,
-            margin: { l: 50, r: 50, t: 20, b: 50 },
+            margin: { l: 30, r: 30, t: 20, b: 30 },
           }}
           config={{ displayModeBar: false }}
         />

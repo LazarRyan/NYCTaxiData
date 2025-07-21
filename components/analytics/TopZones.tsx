@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { getLocationName } from '@/lib/locationMapping';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
@@ -38,7 +39,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
           <Plot
             data={[
               {
-                x: pickups.map(d => d.zone_id),
+                x: pickups.map(d => getLocationName(d.zone_id)),
                 y: pickups.map(d => Number(d.trip_count)),
                 type: 'bar',
                 marker: { color: '#3b82f6' },
@@ -47,17 +48,17 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              xaxis: { title: { text: 'Zone ID' } },
+              xaxis: { title: { text: 'Zone' }, tickangle: -30 },
               yaxis: { title: { text: 'Trips' } },
               height: 300,
-              margin: { l: 50, r: 30, t: 40, b: 50 },
+              margin: { l: 50, r: 30, t: 40, b: 80 },
             }}
             config={{ displayModeBar: false }}
           />
           <Plot
             data={[
               {
-                x: dropoffs.map(d => d.zone_id),
+                x: dropoffs.map(d => getLocationName(d.zone_id)),
                 y: dropoffs.map(d => Number(d.trip_count)),
                 type: 'bar',
                 marker: { color: '#10b981' },
@@ -66,10 +67,10 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              xaxis: { title: { text: 'Zone ID' } },
+              xaxis: { title: { text: 'Zone' }, tickangle: -30 },
               yaxis: { title: { text: 'Trips' } },
               height: 300,
-              margin: { l: 50, r: 30, t: 40, b: 50 },
+              margin: { l: 50, r: 30, t: 40, b: 80 },
             }}
             config={{ displayModeBar: false }}
           />

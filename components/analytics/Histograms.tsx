@@ -38,8 +38,8 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
           <Plot
             data={[
               {
-                x: distance.map(d => d.distance_bin).filter((v): v is number => v !== undefined),
-                y: distance.map(d => Number(d.count)),
+                x: distance.map(d => d.distance_bin).filter((v): v is number => v !== undefined && v <= 40),
+                y: distance.filter(d => d.distance_bin !== undefined && d.distance_bin <= 40).map(d => Number(d.count)),
                 type: 'bar',
                 marker: { color: '#3b82f6' },
                 name: 'Distance (mi)'
@@ -47,7 +47,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
             ]}
             layout={{
               title: { text: 'Trip Distance Histogram' },
-              xaxis: { title: { text: 'Distance (mi, binned)' } },
+              xaxis: { title: { text: 'Distance (mi, binned)' }, range: [0, 40] },
               yaxis: { title: { text: 'Trips' } },
               height: 300,
               margin: { l: 50, r: 30, t: 40, b: 50 },
