@@ -51,7 +51,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              height: 500,
+              height: 600,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
@@ -74,7 +74,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              height: 500,
+              height: 600,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
