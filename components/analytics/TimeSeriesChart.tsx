@@ -39,7 +39,7 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">Trips, Revenue & Tips by Hour of Day</h2>
+      <h2 className="text-xl font-semibold mb-4">Revenue & Tips by Hour of Day</h2>
       {loading && <div>Loading hourly data...</div>}
       {error && <div className="text-red-600">{error}</div>}
       {!loading && !error && (
