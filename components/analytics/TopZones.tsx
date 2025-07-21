@@ -32,6 +32,11 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
+  // Find max y for both charts
+  const maxPickup = Math.max(...pickups.map(d => Number(d.trip_count) || 0), 0);
+  const maxDropoff = Math.max(...dropoffs.map(d => Number(d.trip_count) || 0), 0);
+  const maxY = Math.max(maxPickup, maxDropoff);
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Top Pickup & Dropoff Zones</h2>
@@ -51,7 +56,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              height: 600,
+              height: 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
@@ -59,7 +64,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
                 tickangle: 45,
                 tickfont: { size: 10 },
               },
-              yaxis: { title: { text: 'Trips' } },
+              yaxis: { title: { text: 'Trips' }, range: [0, maxY] },
             }}
             config={{ responsive: true }}
           />
@@ -75,7 +80,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              height: 800,
+              height: 500,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
@@ -83,7 +88,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
                 tickangle: 45,
                 tickfont: { size: 10 },
               },
-              yaxis: { title: { text: 'Trips' } },
+              yaxis: { title: { text: 'Trips' }, range: [0, maxY] },
             }}
             config={{ responsive: true }}
           />
