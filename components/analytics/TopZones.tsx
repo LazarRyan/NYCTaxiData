@@ -51,12 +51,16 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Pickup Zones' },
-              xaxis: { title: { text: 'Zone' }, tickangle: -30 },
+              xaxis: {
+                title: { text: 'Zone' },
+                tickangle: 60,
+              },
               yaxis: { title: { text: 'Trips' } },
               height: 300,
               margin: { l: 50, r: 30, t: 40, b: 80 },
+              width: 500,
             }}
-            config={{ displayModeBar: false }}
+            config={{ responsive: true }}
           />
           <Plot
             data={[
@@ -70,12 +74,16 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              xaxis: { title: { text: 'Zone' }, tickangle: -30 },
+              xaxis: {
+                title: { text: 'Zone' },
+                tickangle: 60,
+              },
               yaxis: { title: { text: 'Trips' } },
               height: 300,
               margin: { l: 50, r: 30, t: 40, b: 80 },
+              width: 500,
             }}
-            config={{ displayModeBar: false }}
+            config={{ responsive: true }}
           />
         </div>
       )}

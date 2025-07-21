@@ -39,7 +39,7 @@ export default function TaxiStats({ stats, loading = false, error = null }: Taxi
           <div className="text-sm text-gray-600">Avg Tip</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">${Number(stats.total_revenue).toFixed(2)}</div>
+          <div className="text-2xl font-bold text-purple-600">{Number(stats.total_revenue).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</div>
           <div className="text-sm text-gray-600">Total Revenue</div>
         </div>
       </div>

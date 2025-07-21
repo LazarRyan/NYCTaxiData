@@ -51,7 +51,7 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
             yaxis2: { title: { text: 'Revenue ($)' }, overlaying: 'y', side: 'right', showgrid: false },
             yaxis3: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', position: 0.95, showgrid: false },
             legend: { orientation: 'h' },
-            height: 350,
+            height: 450,
             margin: { l: 50, r: 50, t: 20, b: 50 },
           }}
           config={{ displayModeBar: false }}
