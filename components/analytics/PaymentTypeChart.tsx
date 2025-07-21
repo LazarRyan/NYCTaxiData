@@ -35,9 +35,11 @@ export default function PaymentTypeChart({ startDate, endDate }: { startDate: st
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
-  const labels = data.map(d => paymentTypeLabels[d.payment_type] || `Type ${d.payment_type}`);
-  const tripCounts = data.map(d => Number(d.trip_count));
-  const revenues = data.map(d => Number(d.total_revenue));
+  // Filter out payment_type 0 (invalid)
+  const filteredData = data.filter(d => d.payment_type !== 0);
+  const labels = filteredData.map(d => paymentTypeLabels[d.payment_type] || `Type ${d.payment_type}`);
+  const tripCounts = filteredData.map(d => Number(d.trip_count));
+  const revenues = filteredData.map(d => Number(d.total_revenue));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">

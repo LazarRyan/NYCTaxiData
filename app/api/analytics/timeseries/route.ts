@@ -12,17 +12,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Start date and end date are required' }, { status: 400 });
     }
 
-    // Aggregate daily trip counts, total revenue, and average fare
+    // Aggregate by hour of day for trip counts, total revenue, and total tip
     const sql = `
       SELECT 
-        DATE(pickup_datetime) as day,
+        EXTRACT(HOUR FROM pickup_datetime) as hour,
         COUNT(*) as trip_count,
         SUM(total_amount) as total_revenue,
-        AVG(fare_amount) as avg_fare
+        SUM(tip_amount) as total_tip
       FROM taxi_trips
       WHERE pickup_datetime >= $1 AND pickup_datetime <= $2
-      GROUP BY day
-      ORDER BY day ASC
+      GROUP BY hour
+      ORDER BY hour ASC
     `;
     const result = await query(sql, [startDate, endDate]);
     return NextResponse.json({ data: result.rows });

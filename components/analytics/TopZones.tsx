@@ -8,6 +8,7 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
 interface TopZoneDatum {
   zone_id: number;
+  zone_name?: string;
   trip_count: string;
   total_revenue: string;
 }
@@ -41,7 +42,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
           <Plot
             data={[
               {
-                x: pickups.map(d => getLocationName(d.zone_id)),
+                x: pickups.map(d => d.zone_name || getLocationName(d.zone_id)),
                 y: pickups.map(d => Number(d.trip_count)),
                 type: 'bar',
                 marker: { color: '#3b82f6' },
@@ -60,7 +61,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
           <Plot
             data={[
               {
-                x: dropoffs.map(d => getLocationName(d.zone_id)),
+                x: dropoffs.map(d => d.zone_name || getLocationName(d.zone_id)),
                 y: dropoffs.map(d => Number(d.trip_count)),
                 type: 'bar',
                 marker: { color: '#10b981' },

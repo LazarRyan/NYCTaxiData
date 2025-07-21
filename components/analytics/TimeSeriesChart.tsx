@@ -5,15 +5,15 @@ import dynamic from 'next/dynamic';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-interface TimeseriesDatum {
-  day: string;
+interface HourlyDatum {
+  hour: string;
   trip_count: string;
   total_revenue: string;
-  avg_fare: string;
+  total_tip: string;
 }
 
 export default function TimeSeriesChart({ startDate, endDate }: { startDate: string; endDate: string }) {
-  const [data, setData] = useState<TimeseriesDatum[]>([]);
+  const [data, setData] = useState<HourlyDatum[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,29 +27,29 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
-  const days = data.map(d => d.day);
+  const hours = data.map(d => Number(d.hour));
   const tripCounts = data.map(d => Number(d.trip_count));
   const revenues = data.map(d => Number(d.total_revenue));
-  const avgFares = data.map(d => Number(d.avg_fare));
+  const tips = data.map(d => Number(d.total_tip));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">Trips & Revenue Over Time</h2>
-      {loading && <div>Loading timeseries...</div>}
+      <h2 className="text-xl font-semibold mb-4">Trips, Revenue & Tips by Hour of Day</h2>
+      {loading && <div>Loading hourly data...</div>}
       {error && <div className="text-red-600">{error}</div>}
       {!loading && !error && (
         <Plot
           data={[
-            { x: days, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
-            { x: days, y: revenues, type: 'bar', name: 'Revenue', marker: { color: '#10b981' }, yaxis: 'y2' },
-            { x: days, y: avgFares, type: 'scatter', mode: 'lines+markers', name: 'Avg Fare', yaxis: 'y3', line: { color: '#f59e42', width: 3, dash: 'dot' } },
+            { x: hours, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
+            { x: hours, y: revenues, type: 'bar', name: 'Revenue', marker: { color: '#10b981' }, yaxis: 'y2' },
+            { x: hours, y: tips, type: 'scatter', mode: 'lines+markers', name: 'Tips', yaxis: 'y3', line: { color: '#f59e42', width: 3, dash: 'dot' } },
           ]}
           layout={{
             barmode: 'group',
-            xaxis: { title: { text: 'Date' } },
+            xaxis: { title: { text: 'Hour of Day' }, dtick: 1 },
             yaxis: { title: { text: 'Trips' }, side: 'left' },
             yaxis2: { title: { text: 'Revenue ($)' }, overlaying: 'y', side: 'right', showgrid: false },
-            yaxis3: { title: { text: 'Avg Fare ($)' }, overlaying: 'y', side: 'right', position: 0.95, showgrid: false },
+            yaxis3: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', position: 0.95, showgrid: false },
             legend: { orientation: 'h' },
             height: 350,
             margin: { l: 50, r: 50, t: 20, b: 50 },
