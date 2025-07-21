@@ -74,16 +74,19 @@ export default function Home() {
             <TimeSeriesChart startDate={startDate} endDate={endDate} />
           </div>
         </div>
-        {/* Bottom grid: Histograms, TopZones, PaymentTypeChart as three columns on large screens */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+        {/* Histograms and PaymentTypeChart: two columns on large screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
           <div className="transition-card animate-fade-in delay-400">
             <Histograms startDate={startDate} endDate={endDate} />
           </div>
           <div className="transition-card animate-fade-in delay-500">
-            <TopZones startDate={startDate} endDate={endDate} />
-          </div>
-          <div className="transition-card animate-fade-in delay-600">
             <PaymentTypeChart startDate={startDate} endDate={endDate} />
+          </div>
+        </div>
+        {/* TopZones: full width row at the bottom */}
+        <div className="mb-4">
+          <div className="transition-card animate-fade-in delay-600">
+            <TopZones startDate={startDate} endDate={endDate} />
           </div>
         </div>
       </div>

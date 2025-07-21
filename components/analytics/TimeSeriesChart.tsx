@@ -27,10 +27,15 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
-  const hours = data.map(d => Number(d.hour));
-  const tripCounts = data.map(d => Number(d.trip_count));
-  const revenues = data.map(d => Number(d.total_revenue));
-  const tips = data.map(d => Number(d.total_tip));
+  // Filter out invalid hours
+  const filteredData = data.filter(d => {
+    const hour = Number(d.hour);
+    return hour >= 0 && hour <= 23;
+  });
+  const hours = filteredData.map(d => Number(d.hour));
+  const tripCounts = filteredData.map(d => Number(d.trip_count));
+  const revenues = filteredData.map(d => Number(d.total_revenue));
+  const tips = filteredData.map(d => Number(d.total_tip));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
