@@ -4,9 +4,20 @@ import { TaxiTrip } from '@/lib/database'
 
 interface TaxiStatsProps {
   data: TaxiTrip[]
+  loading?: boolean
+  error?: string | null
 }
 
-export default function TaxiStats({ data }: TaxiStatsProps) {
+export default function TaxiStats({ data, loading = false, error = null }: TaxiStatsProps) {
+  if (loading) {
+    return <div className="bg-white rounded-lg shadow-md p-6 text-center">Loading statistics...</div>;
+  }
+  if (error) {
+    return <div className="bg-white rounded-lg shadow-md p-6 text-center text-red-600">{error}</div>;
+  }
+  if (!data || data.length === 0) {
+    return <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">No trip data available for the selected range.</div>;
+  }
   const stats = {
     totalTrips: data.length,
     avgFare: data.length > 0 ? data.reduce((sum, trip) => sum + trip.fare_amount, 0) / data.length : 0,
