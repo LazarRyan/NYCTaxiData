@@ -51,12 +51,12 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
           layout={{
             barmode: 'group',
             xaxis: { title: { text: 'Hour of Day' }, dtick: 1 },
-            yaxis: { title: { text: 'Revenue ($)' }, side: 'left' },
-            yaxis2: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', showgrid: false },
+            yaxis: { title: { text: 'Revenue ($)' }, side: 'left', automargin: true },
+            yaxis2: { title: { text: 'Tips ($)' }, overlaying: 'y', side: 'right', showgrid: false, automargin: true },
             legend: { orientation: 'h' },
             height: 450,
             width: undefined,
-            margin: { l: 20, r: 20, t: 20, b: 50 },
+            margin: { l: 20, r: 40, t: 20, b: 50 },
           }}
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: '100%' }}
