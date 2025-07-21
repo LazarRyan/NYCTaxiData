@@ -114,8 +114,8 @@ def run_spark_processing(**context):
             db_password = parsed_url.password
             
             # Test the connection
-            import psycopg2
-            test_conn = psycopg2.connect(
+            import psycopg
+            test_conn = psycopg.connect(
                 host=db_host,
                 port=db_port,
                 database=db_name,
@@ -137,8 +137,8 @@ def run_spark_processing(**context):
     # First, drop and recreate the table with correct schema
     logging.info("Recreating table with correct schema...")
     try:
-        import psycopg2
-        conn = psycopg2.connect(
+        import psycopg
+        conn = psycopg.connect(
             host=db_host,
             port=db_port,
             database=db_name,
@@ -353,7 +353,7 @@ def create_zone_aggregations(**context):
             db_password = parsed_url.password
             
             # Test the connection
-            test_conn = psycopg2.connect(
+            test_conn = psycopg.connect(
                 host=db_host,
                 port=db_port,
                 database=db_name,
@@ -391,7 +391,7 @@ def create_zone_aggregations(**context):
             geojson_data = None
         
         # Connect to database
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host=db_host,
             port=db_port,
             database=db_name,

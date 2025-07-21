@@ -13,7 +13,7 @@ from folium import plugins
 from streamlit_folium import st_folium
 import seaborn as sns
 import matplotlib.pyplot as plt
-import psycopg2
+import psycopg
 from utils import get_nyc_location_name, create_enhanced_metrics
 
 # Page configuration
