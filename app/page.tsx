@@ -75,7 +75,7 @@ export default function Home() {
           </div>
         </div>
         {/* Histograms and PaymentTypeChart: two columns on large screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 mb-6 items-stretch">
           <div className="transition-card animate-fade-in delay-400">
             <Histograms startDate={startDate} endDate={endDate} />
           </div>
