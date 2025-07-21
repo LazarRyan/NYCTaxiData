@@ -104,7 +104,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(0);
 } 
 
-label[for], .filter-container label {
-  color: #222 !important;
-  font-weight: 600 !important;
+label[for], .filter-container label,
+.filter-container h2 {
+  color: #fff !important;
+  font-weight: 700 !important;
 } 

@@ -68,10 +68,10 @@ export default function Home() {
         {/* Header is now in layout.tsx */}
         {/* Date Range Selector */}
         <div className="filter-container">
-          <h2 className="text-xl font-semibold mb-4">Date Range</h2>
+          <h2 className="text-xl font-semibold mb-4 text-white">Date Range</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Start Date
               </label>
               <input
@@ -82,7 +82,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 End Date
               </label>
               <input
