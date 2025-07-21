@@ -60,11 +60,13 @@ export async function GET(request: NextRequest) {
         dropoff_datetime,
         pickup_location_id,
         dropoff_location_id,
-        passenger_count,
         trip_distance,
         fare_amount,
         tip_amount,
-        total_amount
+        total_amount,
+        payment_type,
+        trip_duration_minutes,
+        tip_percentage
       FROM taxi_trips 
       WHERE pickup_datetime >= $1 AND pickup_datetime <= $2
       ORDER BY pickup_datetime DESC
