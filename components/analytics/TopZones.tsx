@@ -33,7 +33,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
   }, [startDate, endDate]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="bg-white rounded-lg shadow-md p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Top Pickup & Dropoff Zones</h2>
       {loading && <div>Loading top zones...</div>}
       {error && <div className="text-red-600">{error}</div>}
@@ -57,6 +57,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
               xaxis: {
                 title: { text: 'Zone' },
                 tickangle: 45,
+                tickfont: { size: 10 },
               },
               yaxis: { title: { text: 'Trips' } },
             }}
@@ -74,12 +75,13 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
             ]}
             layout={{
               title: { text: 'Top Dropoff Zones' },
-              height: 600,
+              height: 800,
               width: undefined,
               margin: { l: 50, r: 30, t: 40, b: 80 },
               xaxis: {
                 title: { text: 'Zone' },
                 tickangle: 45,
+                tickfont: { size: 10 },
               },
               yaxis: { title: { text: 'Trips' } },
             }}

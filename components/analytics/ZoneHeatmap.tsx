@@ -103,7 +103,7 @@ export default function ZoneHeatmap({ startDate, endDate }: { startDate: string;
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="bg-white rounded-lg shadow-md p-6 mb-0">
       <h2 className="text-xl font-semibold mb-4">Zone Heatmap</h2>
       {error && <div className="text-red-600">{error}</div>}
       <div className="flex justify-center">
