@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .main-header {
+    @apply text-5xl font-bold text-center mb-8;
+    background: linear-gradient(90deg, #1f77b4, #ff7f0e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .metric-card {
+    @apply bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg text-center;
+  }
+  
+  .metric-value {
+    @apply text-3xl font-bold;
+  }
+  
+  .metric-label {
+    @apply text-sm opacity-90;
+  }
+  
+  .chart-container {
+    @apply bg-white p-6 rounded-2xl shadow-lg my-4;
+  }
+  
+  .filter-container {
+    @apply bg-white p-4 rounded-xl shadow-md mb-6;
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(90deg, #1f77b4, #ff7f0e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+} 

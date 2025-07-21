@@ -11,7 +11,7 @@ if [ -z "$SUPABASE_DATABASE_URL" ]; then
     echo "❌ SUPABASE_DATABASE_URL environment variable is not set"
     echo ""
     echo "Please set it with your Supabase connection URL:"
-    echo "export SUPABASE_DATABASE_URL='postgresql://postgres:[YOUR-PASSWORD]@db.dgdqhchrfwcsvzhefyis.supabase.co:5432/postgres'"
+    echo "export SUPABASE_DATABASE_URL='postgresql://postgres:"Forgetmenot19123!"@db.dgdqhchrfwcsvzhefyis.supabase.co:5432/postgres'"
     echo ""
     echo "Replace [YOUR-PASSWORD] with your actual Supabase database password"
     exit 1

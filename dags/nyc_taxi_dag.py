@@ -90,49 +90,23 @@ def run_spark_processing(**context):
     import subprocess
     import time
     
-    # Get Supabase connection URL from environment
-    supabase_url = os.getenv('SUPABASE_DATABASE_URL')
+    # Use Supabase PostgreSQL database
+    logging.info("Using Supabase PostgreSQL database")
+    supabase_url = os.getenv("SUPABASE_DATABASE_URL")
     
-    # Use local PostgreSQL if Supabase is not available
     if not supabase_url:
-        logging.warning("SUPABASE_DATABASE_URL not set, using local PostgreSQL")
-        db_host = "postgres"
-        db_port = 5432
-        db_name = "nyc_taxi_data"
-        db_user = "airflow"
-        db_password = "airflow"
-    else:
-        try:
-            # Parse Supabase URL to get connection details
-            from urllib.parse import urlparse
-            parsed_url = urlparse(supabase_url)
-            
-            db_host = parsed_url.hostname
-            db_port = parsed_url.port or 5432
-            db_name = parsed_url.path.lstrip('/')
-            db_user = parsed_url.username
-            db_password = parsed_url.password
-            
-            # Test the connection
-            import psycopg2
-            test_conn = psycopg2.connect(
-                host=db_host,
-                port=db_port,
-                database=db_name,
-                user=db_user,
-                password=db_password,
-                connect_timeout=10
-            )
-            test_conn.close()
-            logging.info("Supabase connection successful, using Supabase")
-            
-        except Exception as e:
-            logging.warning(f"Supabase connection failed: {e}, falling back to local PostgreSQL")
-            db_host = "postgres"
-            db_port = 5432
-            db_name = "nyc_taxi_data"
-            db_user = "airflow"
-            db_password = "airflow"
+        logging.error("SUPABASE_DATABASE_URL not set")
+        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
+    
+    # Parse the connection URL
+    from urllib.parse import urlparse
+    parsed_url = urlparse(supabase_url)
+    
+    db_host = parsed_url.hostname
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.path.lstrip('/')
+    db_user = parsed_url.username
+    db_password = parsed_url.password
     
     # First, drop and recreate the table with correct schema
     logging.info("Recreating table with correct schema...")
@@ -143,7 +117,8 @@ def run_spark_processing(**context):
             port=db_port,
             database=db_name,
             user=db_user,
-            password=db_password
+            password=db_password,
+            sslmode='require'  # SSL required for Supabase
         )
         cursor = conn.cursor()
         cursor.execute("DROP TABLE IF EXISTS taxi_trips CASCADE;")
@@ -233,8 +208,8 @@ def run_spark_processing(**context):
         # Save to database using Spark JDBC
         logging.info("Saving to database using Spark JDBC...")
         
-        # Build JDBC URL
-        jdbc_url = f"jdbc:postgresql://{db_host}:{db_port}/{db_name}"
+        # Build JDBC URL with SSL for Supabase
+        jdbc_url = f"jdbc:postgresql://{db_host}:{db_port}/{db_name}?sslmode=require"
         
         processed_df.write \
             .format("jdbc") \
@@ -244,6 +219,7 @@ def run_spark_processing(**context):
             .option("password", db_password) \
             .option("driver", "org.postgresql.Driver") \
             .option("batchsize", 1000) \
+            .option("sslmode", "require") \
             .mode("append") \
             .save()
         
@@ -329,48 +305,23 @@ def create_zone_aggregations(**context):
     import json
     import os
     
-    # Get Supabase connection URL from environment
-    supabase_url = os.getenv('SUPABASE_DATABASE_URL')
+    # Use Supabase PostgreSQL database
+    logging.info("Using Supabase PostgreSQL database for zone aggregations")
+    supabase_url = os.getenv("SUPABASE_DATABASE_URL")
     
-    # Use local PostgreSQL if Supabase is not available
     if not supabase_url:
-        logging.warning("SUPABASE_DATABASE_URL not set, using local PostgreSQL")
-        db_host = "postgres"
-        db_port = 5432
-        db_name = "nyc_taxi_data"
-        db_user = "airflow"
-        db_password = "airflow"
-    else:
-        try:
-            # Parse Supabase URL to get connection details
-            from urllib.parse import urlparse
-            parsed_url = urlparse(supabase_url)
-            
-            db_host = parsed_url.hostname
-            db_port = parsed_url.port or 5432
-            db_name = parsed_url.path.lstrip('/')
-            db_user = parsed_url.username
-            db_password = parsed_url.password
-            
-            # Test the connection
-            test_conn = psycopg2.connect(
-                host=db_host,
-                port=db_port,
-                database=db_name,
-                user=db_user,
-                password=db_password,
-                connect_timeout=10
-            )
-            test_conn.close()
-            logging.info("Supabase connection successful, using Supabase")
-            
-        except Exception as e:
-            logging.warning(f"Supabase connection failed: {e}, falling back to local PostgreSQL")
-            db_host = "postgres"
-            db_port = 5432
-            db_name = "nyc_taxi_data"
-            db_user = "airflow"
-            db_password = "airflow"
+        logging.error("SUPABASE_DATABASE_URL not set")
+        raise ValueError("SUPABASE_DATABASE_URL environment variable is required")
+    
+    # Parse the connection URL
+    from urllib.parse import urlparse
+    parsed_url = urlparse(supabase_url)
+    
+    db_host = parsed_url.hostname
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.path.lstrip('/')
+    db_user = parsed_url.username
+    db_password = parsed_url.password
     
     try:
         # Read zone lookup data
@@ -390,13 +341,14 @@ def create_zone_aggregations(**context):
             logging.info("No GeoJSON file available - using simplified zone mapping")
             geojson_data = None
         
-        # Connect to database
+        # Connect to database with SSL for Supabase
         conn = psycopg2.connect(
             host=db_host,
             port=db_port,
             database=db_name,
             user=db_user,
-            password=db_password
+            password=db_password,
+            sslmode='require'  # SSL required for Supabase
         )
         
         # Get pickup zone aggregations

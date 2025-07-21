@@ -1,144 +1,340 @@
-# 🚀 Streamlit Cloud Deployment Guide
+# NYC Taxi Analytics Dashboard - Deployment Guide
 
-## Overview
-This guide explains how to deploy the NYC Taxi Data Pipeline dashboard to Streamlit Cloud.
+This guide covers deployment of the NYC Taxi Analytics Dashboard, which consists of a Next.js frontend and an Apache Airflow + PostgreSQL backend.
 
-## Prerequisites
-- GitHub account
-- Streamlit Cloud account (free tier available)
-- PostgreSQL database (can use external service like Supabase, Railway, or Neon)
+## 🏗️ Architecture Overview
 
-## Deployment Steps
-
-### 1. Database Setup
-Since Streamlit Cloud doesn't support PostgreSQL containers, you'll need an external database:
-
-#### Option A: Supabase (Recommended)
-1. Go to [supabase.com](https://supabase.com)
-2. Create a free account
-3. Create a new project
-4. Go to SQL Editor and run the schema creation script:
-
-```sql
--- Create the taxi_trips table
-CREATE TABLE taxi_trips (
-    id SERIAL PRIMARY KEY,
-    pickup_datetime TIMESTAMP,
-    dropoff_datetime TIMESTAMP,
-    pickup_location_id INTEGER,
-    dropoff_location_id INTEGER,
-    trip_distance DECIMAL(10,2),
-    fare_amount DECIMAL(10,2),
-    tip_amount DECIMAL(10,2),
-    total_amount DECIMAL(10,2),
-    payment_type INTEGER,
-    trip_duration_minutes INTEGER,
-    tip_percentage DECIMAL(5,2)
-);
-
--- Create indexes for performance
-CREATE INDEX idx_pickup_datetime ON taxi_trips(pickup_datetime);
-CREATE INDEX idx_payment_type ON taxi_trips(payment_type);
-CREATE INDEX idx_pickup_location ON taxi_trips(pickup_location_id);
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Next.js App   │    │  Apache Airflow │    │   PostgreSQL    │
+│   (Vercel)      │◄──►│   (Docker)      │◄──►│   (Docker)      │
+│   Frontend      │    │   Backend       │    │   Database      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-#### Option B: Railway
-1. Go to [railway.app](https://railway.app)
-2. Create a new PostgreSQL database
-3. Use the same schema as above
+## 🚀 Frontend Deployment (Vercel)
 
-#### Option C: Neon
-1. Go to [neon.tech](https://neon.tech)
-2. Create a free PostgreSQL database
-3. Use the same schema as above
+### Prerequisites
+- Vercel account
+- Node.js 18+
+- Git repository
+
+### 1. Prepare Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```bash
+# Supabase Configuration (if using Supabase)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Database Configuration (if connecting directly to PostgreSQL)
+NEXT_PUBLIC_DATABASE_URL=postgresql://user:password@host:port/database
+```
+
+### 2. Deploy to Vercel
+
+#### Option A: Vercel CLI
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy
+vercel --prod
+```
+
+#### Option B: Vercel Dashboard
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+### 3. Configure Vercel Settings
+
+In your `vercel.json`:
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "npm install"
+}
+```
+
+## 🐳 Backend Deployment (Docker)
+
+### Prerequisites
+- Docker and Docker Compose
+- 8GB+ RAM available
+- Cloud provider (AWS, GCP, Azure, etc.)
+
+### 1. Production Docker Compose
+
+Create `docker-compose.prod.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: nyc_taxi_data
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d nyc_taxi_data"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${POSTGRES_PASSWORD}@postgres/nyc_taxi_data
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      SPARK_HOME: /opt/spark
+      PYTHONPATH: /opt/spark/python
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./spark_jobs:/opt/airflow/spark_jobs
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    command: standalone
+
+  spark-master:
+    image: bitnami/spark:3.5
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+    ports:
+      - "8081:8080"
+      - "7077:7077"
+    volumes:
+      - ./spark_jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
+    restart: unless-stopped
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
 
 ### 2. Environment Variables
-In Streamlit Cloud, add these environment variables:
 
-```
-DATABASE_URL=postgresql://username:password@host:port/database
-```
+Create `.env.prod`:
+```bash
+# PostgreSQL
+POSTGRES_PASSWORD=your_secure_password
 
-### 3. Streamlit Cloud Deployment
-1. Go to [share.streamlit.io](https://share.streamlit.io)
-2. Connect your GitHub account
-3. Select this repository
-4. Set the main file path to: `streamlit_app/app.py`
-5. Set the Python version to: `3.11`
-6. Add your database URL as an environment variable
-7. Deploy!
+# Airflow
+AIRFLOW_FERNET_KEY=your_fernet_key
 
-## File Structure for Streamlit Cloud
-```
-NYCTaxiData/
-├── streamlit_app/
-│   ├── app.py              # Main Streamlit app
-│   ├── utils.py            # Helper functions
-│   └── requirements.txt    # Dependencies
-├── .streamlit/
-│   └── config.toml        # Streamlit configuration
-├── data/
-│   └── zones/             # NYC zone data
-└── README.md
+# Database Connection (if using external database)
+SUPABASE_HOST=your_supabase_host
+SUPABASE_PORT=5432
+SUPABASE_DB=postgres
+SUPABASE_USER=postgres
+SUPABASE_PASSWORD=your_supabase_password
 ```
 
-## Important Notes
+### 3. Deploy Backend
 
-### Database Connection
-- The app expects a PostgreSQL database
-- Update the database connection in `streamlit_app/app.py` if needed
-- Ensure your database is accessible from Streamlit Cloud
+```bash
+# Set environment variables
+export $(cat .env.prod | xargs)
 
-### Data Loading
-- For demo purposes, you can populate the database with sample data
-- The app will show "No data available" until data is loaded
-- Consider adding a data loading script for demo purposes
+# Deploy to cloud provider
+docker-compose -f docker-compose.prod.yml up -d
 
-### Performance
-- Streamlit Cloud has memory limitations
-- The app is optimized for large datasets with chunked loading
-- Consider reducing data size for demo purposes
+# Check status
+docker-compose -f docker-compose.prod.yml ps
+```
 
-## Troubleshooting
+## 🔗 Connecting Frontend to Backend
 
-### Common Issues
-1. **Database Connection Error**: Check your DATABASE_URL environment variable
-2. **Import Errors**: Ensure all dependencies are in `streamlit_app/requirements.txt`
-3. **Memory Issues**: Reduce data size or optimize queries
-4. **Deployment Failures**: Check the Streamlit Cloud logs
+### Option 1: Direct PostgreSQL Connection
 
-### Logs
-- View deployment logs in Streamlit Cloud dashboard
-- Check for any missing dependencies or connection issues
+Update your Next.js app to connect directly to PostgreSQL:
 
-## Demo Data
-For demonstration purposes, you can add sample data to your database:
+```typescript
+// lib/database.ts
+import { Pool } from 'pg'
 
-```python
-# Sample data insertion script
-import pandas as pd
-from sqlalchemy import create_engine
-
-# Create sample data
-sample_data = pd.DataFrame({
-    'pickup_datetime': ['2025-01-01 10:00:00'],
-    'dropoff_datetime': ['2025-01-01 10:30:00'],
-    'pickup_location_id': [1],
-    'dropoff_location_id': [2],
-    'trip_distance': [5.2],
-    'fare_amount': [15.50],
-    'tip_amount': [3.10],
-    'total_amount': [18.60],
-    'payment_type': [1],
-    'trip_duration_minutes': [30],
-    'tip_percentage': [20.0]
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 })
 
-# Insert into database
-engine = create_engine('your_database_url')
-sample_data.to_sql('taxi_trips', engine, if_exists='append', index=False)
+export async function getTaxiData(startDate: string, endDate: string) {
+  const query = `
+    SELECT * FROM taxi_trips 
+    WHERE pickup_datetime >= $1 AND pickup_datetime <= $2
+    ORDER BY pickup_datetime DESC
+    LIMIT 1000
+  `
+  const result = await pool.query(query, [startDate, endDate])
+  return result.rows
+}
 ```
 
-## Support
-- Check Streamlit documentation: [docs.streamlit.io](https://docs.streamlit.io)
-- Streamlit Cloud documentation: [docs.streamlit.io/streamlit-community-cloud](https://docs.streamlit.io/streamlit-community-cloud) 
+### Option 2: API Layer
+
+Create an API route in Next.js:
+
+```typescript
+// app/api/taxi-data/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { getTaxiData } from '@/lib/database'
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const startDate = searchParams.get('startDate')
+  const endDate = searchParams.get('endDate')
+
+  try {
+    const data = await getTaxiData(startDate!, endDate!)
+    return NextResponse.json(data)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+  }
+}
+```
+
+## 🔒 Security Considerations
+
+### 1. Environment Variables
+- Never commit `.env` files to version control
+- Use secure, randomly generated passwords
+- Rotate credentials regularly
+
+### 2. Network Security
+- Use HTTPS for all external connections
+- Configure firewall rules appropriately
+- Use VPN for database access if needed
+
+### 3. Database Security
+- Use strong passwords
+- Limit database access to necessary IPs
+- Enable SSL for database connections
+- Regular backups
+
+## 📊 Monitoring and Maintenance
+
+### 1. Health Checks
+```bash
+# Check service status
+docker-compose -f docker-compose.prod.yml ps
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs airflow
+docker-compose -f docker-compose.prod.yml logs postgres
+```
+
+### 2. Database Maintenance
+```bash
+# Connect to database
+docker exec -it nyctaxidata-postgres-1 psql -U airflow -d nyc_taxi_data
+
+# Check table sizes
+SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+FROM pg_tables WHERE schemaname = 'public' ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+```
+
+### 3. Airflow Monitoring
+- Monitor DAG execution in Airflow UI
+- Set up alerts for failed tasks
+- Review logs regularly
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+1. **Frontend can't connect to backend**
+   - Check CORS settings
+   - Verify environment variables
+   - Test database connectivity
+
+2. **Airflow tasks failing**
+   - Check PySpark logs
+   - Verify data source availability
+   - Monitor resource usage
+
+3. **Database connection issues**
+   - Verify PostgreSQL is running
+   - Check connection string format
+   - Test network connectivity
+
+### Performance Optimization
+
+1. **Database**
+   - Add appropriate indexes
+   - Optimize queries
+   - Monitor query performance
+
+2. **Frontend**
+   - Implement caching
+   - Use pagination for large datasets
+   - Optimize bundle size
+
+3. **Backend**
+   - Scale Spark workers as needed
+   - Monitor memory usage
+   - Optimize data processing
+
+## 📈 Scaling Considerations
+
+### Horizontal Scaling
+- Add more Spark workers
+- Use external PostgreSQL (RDS, etc.)
+- Implement load balancing
+
+### Vertical Scaling
+- Increase container resources
+- Optimize memory allocation
+- Use faster storage
+
+### Data Pipeline Scaling
+- Implement data partitioning
+- Use incremental processing
+- Add data quality checks
+
+---
+
+**For support, check the main README.md or create an issue in the repository.** 

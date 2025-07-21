@@ -35,7 +35,7 @@ services:
       SPARK_HOME: /opt/spark
       PYTHONPATH: /opt/spark/python
       # Supabase configuration
-      SUPABASE_DATABASE_URL: ${SUPABASE_DATABASE_URL}
+      SUPABASE_DATABASE_URL: postgresql://postgres:Forgetmenot19123!@db.dgdqhchrfwcsvzhefyis.supabase.co:5432/postgres
     ports:
       - "8080:8080"
     volumes:
@@ -45,6 +45,11 @@ services:
       - ./plugins:/opt/airflow/plugins
       - ./spark_jobs:/opt/airflow/spark_jobs
     command: standalone
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    extra_hosts:
+      - "db.dgdqhchrfwcsvzhefyis.supabase.co:2600:1f16:1cd0:3312:5b74:d259:6989:909b"
     healthcheck:
       test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
       interval: 30s
@@ -84,20 +89,7 @@ services:
       - ./spark_jobs:/opt/bitnami/spark/jobs
       - ./data:/opt/bitnami/spark/data
 
-  # Streamlit Dashboard
-  streamlit:
-    build:
-      context: .
-      dockerfile: Dockerfile.streamlit
-    ports:
-      - "8501:8501"
-    environment:
-      - DATABASE_URL=postgresql://airflow:airflow@postgres:5432/nyc_taxi_data
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./streamlit_app:/app/streamlit_app
+
       - ./data:/app/data
 
 volumes:
