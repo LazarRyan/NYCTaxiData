@@ -167,6 +167,50 @@ vercel --prod
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
+## 🧩 Main Components & Structure
+
+### Frontend (Next.js)
+- **app/page.tsx**: Main dashboard layout and routing.
+- **app/layout.tsx**: Global layout and styles.
+- **app/api/**: API routes for analytics, taxi data, etc. (serverless functions).
+- **components/analytics/**: All analytics charts (TimeSeriesChart, PaymentTypeChart, Histograms, TopZones, ZoneHeatmap).
+- **components/shared/**: Shared UI elements (DashboardHeader, LoadingSpinner, etc.).
+- **components/**: Other dashboard sections (TaxiStats, MetricsGrid, FiltersPanel, MapSection, ChartsSection).
+- **lib/**: Database connection and utility functions (e.g., location mapping).
+- **utils/**: Formatting and helper utilities.
+- **public/**: Static assets (geojson, images, etc.).
+
+### Backend (Airflow, Spark, PostgreSQL)
+- **dags/nyc_taxi_dag.py**: Main Airflow DAG for ETL pipeline.
+- **spark_jobs/**: PySpark jobs for data processing.
+- **data/zones/**: Zone lookup CSV, geojson, and shapefiles for geospatial analytics.
+- **taxi_zones/**: Shapefiles for geospatial processing.
+- **Dockerfile.airflow**: Airflow + Spark Docker image.
+- **docker-compose.yml**: Orchestrates Airflow, PostgreSQL, Spark.
+- **requirements.txt**: Python dependencies for Airflow/Spark jobs.
+
+### Scripts & Deployment
+- **scripts/**: Deployment and setup scripts (deploy-to-vercel.sh, deploy-vercel.sh, run_pipeline.sh, setup-env.sh).
+- **DEPLOYMENT.md**: Detailed deployment guide for Vercel and Docker.
+- **vercel.json**: Vercel project configuration.
+
+### Data & Logs
+- **data/raw/**, **data/processed/**: Local data storage (not versioned).
+- **logs/**: Airflow and pipeline logs (not versioned).
+
+## 🗂️ API Routes
+- **/api/taxi-data/**: Fetches summary statistics for dashboard.
+- **/api/analytics/timeseries/**: Hourly revenue/tips for TimeSeriesChart.
+- **/api/analytics/payment-types/**: Payment type breakdown for PaymentTypeChart.
+- **/api/analytics/histograms/**: Trip distance/duration histograms.
+- **/api/analytics/top-zones/**: Top pickup/dropoff zones.
+- **/api/analytics/zone-heatmap/**: Data for zone heatmap map.
+
+## 🛠️ How to Extend
+- Add new analytics: Create a new component in `components/analytics/` and a matching API route in `app/api/analytics/`.
+- Add new ETL steps: Update `dags/nyc_taxi_dag.py` and/or add a new PySpark job in `spark_jobs/`.
+- Add new data sources: Update pipeline and database schema as needed.
+
 ## 📁 Project Structure
 
 ```
