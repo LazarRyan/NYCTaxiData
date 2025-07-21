@@ -44,32 +44,21 @@ export default function Home() {
   const [data, setData] = useState<TaxiTrip[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<ApiResponse['pagination'] | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(1000);
 
-  const fetchData = async (page: number = 1) => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const params = new URLSearchParams({
         startDate,
         endDate,
-        page: page.toString(),
-        pageSize: pageSize.toString(),
       });
-
       const response = await fetch(`/api/taxi-data?${params}`);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
       const result: ApiResponse = await response.json();
       setData(result.data);
-      setPagination(result.pagination);
-      setCurrentPage(page);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -83,12 +72,7 @@ export default function Home() {
   }, [startDate, endDate]);
 
   const handleDateChange = () => {
-    setCurrentPage(1);
-    fetchData(1);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    fetchData(newPage);
+    fetchData();
   };
 
   // Download CSV handler

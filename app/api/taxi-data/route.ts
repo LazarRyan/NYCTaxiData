@@ -17,11 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '1000');
-    const offset = (page - 1) * pageSize;
-
-    console.log('Request parameters:', { startDate, endDate, page, pageSize, offset });
+    console.log('Taxi-data API called with:', { startDate, endDate });
 
     if (!startDate || !endDate) {
       console.log('Missing startDate or endDate');
@@ -71,22 +67,14 @@ export async function GET(request: NextRequest) {
       FROM taxi_trips 
       WHERE pickup_datetime >= $1 AND pickup_datetime <= $2
       ORDER BY pickup_datetime DESC
-      LIMIT $3 OFFSET $4
+      LIMIT 10000
     `;
 
-    const result = await query(dataQuery, [startDate, endDate, pageSize.toString(), offset.toString()]);
+    const result = await query(dataQuery, [startDate, endDate]);
     console.log('Data query result rows:', result.rows.length);
 
     const response = {
-      data: result.rows,
-      pagination: {
-        page,
-        pageSize,
-        totalRecords,
-        totalPages: Math.ceil(totalRecords / pageSize),
-        hasNextPage: page * pageSize < totalRecords,
-        hasPrevPage: page > 1
-      }
+      data: result.rows
     };
 
     console.log('Sending response with', result.rows.length, 'rows');
