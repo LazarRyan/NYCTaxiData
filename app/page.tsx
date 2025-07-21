@@ -106,7 +106,7 @@ export default function Home() {
       const rows = result.data;
       if (!rows || rows.length === 0) throw new Error('No data to download');
       const header = Object.keys(rows[0]);
-      const csv = [header.join(','), ...rows.map(row => header.map(h => JSON.stringify(row[h] ?? '')).join(','))].join('\n');
+      const csv = [header.join(','), ...rows.map((row: Record<string, any>) => header.map(h => JSON.stringify(row[h] ?? '')).join(','))].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       saveAs(blob, 'nyc_taxi_data.csv');
     } catch (err) {
