@@ -3,12 +3,16 @@ import { query, testConnection } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('API route called');
+    
     // Test connection first
     const isConnected = await testConnection();
     if (!isConnected) {
       console.error('Database connection failed');
       return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
     }
+
+    console.log('Database connection successful, parsing request...');
 
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -17,7 +21,10 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '1000');
     const offset = (page - 1) * pageSize;
 
+    console.log('Request parameters:', { startDate, endDate, page, pageSize, offset });
+
     if (!startDate || !endDate) {
+      console.log('Missing startDate or endDate');
       return NextResponse.json({ error: 'Start date and end date are required' }, { status: 400 });
     }
 
@@ -29,6 +36,8 @@ export async function GET(request: NextRequest) {
       NODE_ENV: process.env.NODE_ENV
     });
 
+    console.log('Executing count query...');
+    
     // First, get total count for pagination info
     const countQuery = `
       SELECT COUNT(*) as total
@@ -37,8 +46,13 @@ export async function GET(request: NextRequest) {
     `;
     
     const countResult = await query(countQuery, [startDate, endDate]);
+    console.log('Count query result:', countResult.rows);
+    
     const totalRecords = parseInt(countResult.rows[0]?.total || '0');
+    console.log('Total records:', totalRecords);
 
+    console.log('Executing data query...');
+    
     // Then get paginated data
     const dataQuery = `
       SELECT 
@@ -58,8 +72,9 @@ export async function GET(request: NextRequest) {
     `;
 
     const result = await query(dataQuery, [startDate, endDate, pageSize.toString(), offset.toString()]);
+    console.log('Data query result rows:', result.rows.length);
 
-    return NextResponse.json({
+    const response = {
       data: result.rows,
       pagination: {
         page,
@@ -69,10 +84,14 @@ export async function GET(request: NextRequest) {
         hasNextPage: page * pageSize < totalRecords,
         hasPrevPage: page > 1
       }
-    });
+    };
+
+    console.log('Sending response with', result.rows.length, 'rows');
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('API Error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 } 

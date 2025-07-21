@@ -1,19 +1,33 @@
 import { Pool } from 'pg'
 
+// Try connection string first, fallback to individual params
+const getPoolConfig = () => {
+  // If we have a connection string, use it
+  if (process.env.DATABASE_URL) {
+    return {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    }
+  }
+  
+  // Otherwise use individual parameters
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'nyc_taxi_data',
+    user: process.env.DB_USER || 'airflow',
+    password: process.env.DB_PASSWORD || 'airflow',
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    ssl: process.env.NODE_ENV === 'production' ? { 
+      rejectUnauthorized: false
+    } : false,
+  }
+}
+
 // Create a connection pool with better error handling
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'nyc_taxi_data',
-  user: process.env.DB_USER || 'airflow',
-  password: process.env.DB_PASSWORD || 'airflow',
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000, // Increased timeout
-  ssl: process.env.NODE_ENV === 'production' ? { 
-    rejectUnauthorized: false
-  } : false,
-})
+const pool = new Pool(getPoolConfig())
 
 // Test connection function
 export async function testConnection() {
