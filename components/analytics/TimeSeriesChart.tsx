@@ -45,7 +45,7 @@ export default function TimeSeriesChart({ startDate, endDate }: { startDate: str
       {!loading && !error && (
         <Plot
           data={[
-            { x: hours, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
+            // { x: hours, y: tripCounts, type: 'bar', name: 'Trips', marker: { color: '#3b82f6' } },
             { x: hours, y: revenues, type: 'bar', name: 'Revenue', marker: { color: '#10b981' }, yaxis: 'y2' },
             { x: hours, y: tips, type: 'scatter', mode: 'lines+markers', name: 'Tips', yaxis: 'y3', line: { color: '#f59e42', width: 3, dash: 'dot' } },
           ]}

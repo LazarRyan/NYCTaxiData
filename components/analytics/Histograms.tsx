@@ -51,7 +51,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Distance Histogram' },
               xaxis: { title: { text: 'Distance (mi, binned)' }, range: [0, 40] },
               yaxis: { title: { text: 'Trips' } },
-              height: 300,
+              height: 400,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}
@@ -70,7 +70,7 @@ export default function Histograms({ startDate, endDate }: { startDate: string; 
               title: { text: 'Trip Duration Histogram' },
               xaxis: { title: { text: 'Duration (min, binned)' } },
               yaxis: { title: { text: 'Trips' } },
-              height: 300,
+              height: 400,
               margin: { l: 50, r: 30, t: 40, b: 50 },
             }}
             config={{ displayModeBar: false }}

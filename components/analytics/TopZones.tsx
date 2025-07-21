@@ -53,7 +53,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
               title: { text: 'Top Pickup Zones' },
               xaxis: {
                 title: { text: 'Zone' },
-                tickangle: 60,
+                tickangle: 45,
               },
               yaxis: { title: { text: 'Trips' } },
               height: 350,
@@ -76,7 +76,7 @@ export default function TopZones({ startDate, endDate }: { startDate: string; en
               title: { text: 'Top Dropoff Zones' },
               xaxis: {
                 title: { text: 'Zone' },
-                tickangle: 60,
+                tickangle: 45,
               },
               yaxis: { title: { text: 'Trips' } },
               height: 350,
