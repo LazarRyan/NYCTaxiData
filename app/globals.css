@@ -103,3 +103,8 @@ input[type="datetime-local"] {
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(0);
 } 
+
+label[for], .filter-container label {
+  color: #222 !important;
+  font-weight: 600 !important;
+} 
