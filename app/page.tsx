@@ -60,11 +60,11 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-white mb-2 drop-shadow">NYC Taxi Data Dashboard</h1>
           <div className="text-lg text-gray-200 font-medium drop-shadow">Data shown: {displayRange}</div>
         </div>
-        <div className="flex flex-col gap-8 mb-8">
+        <div className="flex flex-col gap-6 mb-6">
           <div className="transition-card animate-fade-in">
             <TaxiStats stats={stats} loading={loading} error={error} />
           </div>
-          <div className="transition-card animate-fade-in mb-6">
+          <div className="transition-card animate-fade-in">
             <ZoneHeatmap startDate={startDate} endDate={endDate} />
           </div>
         </div>
