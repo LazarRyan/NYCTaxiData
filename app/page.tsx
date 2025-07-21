@@ -84,7 +84,7 @@ export default function Home() {
           </div>
         </div>
         {/* TopZones: full width row at the bottom */}
-        <div className="mb-6">
+        <div>
           <div className="transition-card animate-fade-in delay-600">
             <TopZones startDate={startDate} endDate={endDate} />
           </div>
