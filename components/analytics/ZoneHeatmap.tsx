@@ -57,9 +57,18 @@ export default function ZoneHeatmap({ startDate, endDate }: { startDate: string;
       .then(res => setData(res.data))
       .catch(() => setError('Failed to load heatmap data'));
     fetch('/nyu-2451-36743-geojson.json')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          console.error('GeoJSON fetch failed with status:', res.status);
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then(setGeojson)
-      .catch(() => setError('Failed to load zone polygons'))
+      .catch((err) => {
+        console.error('GeoJSON fetch error:', err);
+        setError('Failed to load zone polygons');
+      })
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
